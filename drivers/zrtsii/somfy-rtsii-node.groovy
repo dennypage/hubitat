@@ -41,7 +41,7 @@
 // to guess position based upon the amount of time since a command
 // was sent. There are a number of things that can affect this, 
 // how busy the hub is, how busy the ZRTSII is, how reliable the RTS
-// motor receiption is, etc. In other words, don't expect positioning
+// motor reception is, etc. In other words, don't expect positioning
 // to be highly accurate. 10% is a good result. Best results will
 // always be from a fully open or fully closed starting point.
 //

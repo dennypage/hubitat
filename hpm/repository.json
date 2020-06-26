@@ -1,0 +1,37 @@
+{
+  "author": "Denny Page",
+  "gitHubUrl": "https://github.com/dennypage",
+  "payPalUrl": "https://paypal.me/dennythemartian?locale.x=en_US",
+  "packages": [
+    {
+      "name": "Philio PAT02-B Temperature / Humidity sensor",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/pat02.json",
+      "description": "Driver for the PAT02-B Temperature / Humidity sensor made by Philio (also Zipato, Safe Grow, etc.)"
+    },
+    {
+      "name": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/zrtsii.json",
+      "description": "Drivers for the Somfy Z-Wave to RTS Interface II (ZRTSII)"
+    },
+    {
+      "name": "Simple Contact Reminders",
+      "category": "Convenience",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-contact-reminders.json",
+      "description": "A simple reminder notification system for contact sensors (doors/windows/etc.) that have been left open"
+    },
+    {
+      "name": "Simple Switch Reminders",
+      "category": "Convenience",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-switch-reminders.json",
+      "description": "A simple reminder notification system for switches that have been left on"
+    },
+    {
+      "name": "Simple Switch Off Timers",
+      "category": "Convenience",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-switch-off-timers.json",
+      "description": "A simple switch timeout system for turning off switches that have been left on"
+    }
+  ]
+}

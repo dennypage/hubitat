@@ -1,0 +1,27 @@
+{
+  "packageName": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
+  "minimumHEVersion": "2.2.1",
+  "author": "Denny Page",
+  "version": "1.0",
+  "dateReleased": "2020-06-18",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zrtsii",
+  "communityLink": "https://community.hubitat.com/t/somfy-z-wave-to-rts-interface-ii-driver/43745",
+  "drivers": [
+    {
+      "id": "15dc40a9-c825-4c23-bd6d-5bcf1e52512e",
+      "name": "Somfy ZRTSII Controller",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/zrtsii/somfy-rtsii-controller.groovy",
+      "version": "1.0.0",
+      "required": true
+    },
+    {
+      "id": "d5c28610-0353-4e29-a2ba-c929a98502d8",
+      "name": "Somfy ZRTSII Node",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/zrtsii/somfy-rtsii-node.groovy",
+      "version": "1.0.0",
+      "required": true
+    }
+  ]
+}

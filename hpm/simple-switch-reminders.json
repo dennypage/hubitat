@@ -1,0 +1,29 @@
+{
+  "packageName": "Simple Switch Reminders",
+  "minimumHEVersion": "2.2.1",
+  "author": "Denny Page",
+  "version": "1.0",
+  "dateReleased": "2020-06-23",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-switch-reminders",
+  "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
+  "apps": [
+    {
+      "id": "d2fae99d-9403-49c6-9cdf-30d8c5d745d2",
+      "name": "Simple Switch Reminders",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-reminders/simple-switch-reminders.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    },
+    {
+      "id": "05e4865d-7d0e-4037-a00e-f99a97b7ae72",
+      "name": "Simple Switch Reminder",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-reminders/simple-switch-reminder.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    }
+  ]
+}

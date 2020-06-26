@@ -1,0 +1,29 @@
+{
+  "packageName": "Simple Contact Reminders",
+  "minimumHEVersion": "2.2.1",
+  "author": "Denny Page",
+  "version": "1.0",
+  "dateReleased": "2020-06-23",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-contact-reminders",
+  "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
+  "apps": [
+    {
+      "id": "17206502-107e-4453-8781-d64625a14d20",
+      "name": "Simple Contact Reminders",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-contact-reminders/simple-contact-reminders.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    },
+    {
+      "id": "1c27532f-d40d-4ae9-8ab4-ca8ae4145020",
+      "name": "Simple Contact Reminder",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-contact-reminders/simple-contact-reminder.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-### PAT02-B Temperature / Humidity sensor
+### Philio PAT02-B Temperature / Humidity sensor
 
 This driver supports the PAT02-B Temperature / Humidity sensor made by Philio
 

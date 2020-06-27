@@ -25,6 +25,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+// Version 1.0.0    Initial release
+// Version 1.1.0    Report version information for protocol, hardware and firmware.
+//                  Unhandled events logged as warnings.
+//
 
 metadata
 {
@@ -128,6 +132,7 @@ def deviceSync()
     def cmds = []
     if (resync)
     {
+        cmds.add(secureCmd(zwave.versionV2.versionGet()))
         cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalGet()))
     }
     
@@ -201,7 +206,7 @@ void installed()
     state.pendingResync = true
     state.pendingRefresh = true
     runIn(1, deviceSync)
-    runIn(1800,logsOff)
+    runIn(1800, logsOff)
 }
 
 void updated()
@@ -292,13 +297,13 @@ def clearTamper() {
 
 def parse(String description)
 {
-    hubitat.zwave.Command cmd = zwave.parse(description,commandClassVersions)
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
     if (cmd)
     {
         return zwaveEvent(cmd)
     }
 
-    if (logEnable) log.debug "Non Z-Wave parse event: ${description}"
+    log.warn "Non Z-Wave parse event: ${description}"
     return null
 }
 
@@ -382,7 +387,7 @@ def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
     }
     else
     {
-        if (logEnable) log.debug "Unhandled NotificationReport: ${cmd.toString()}"
+        log.warn "Unhandled NotificationReport: ${cmd.toString()}"
     }
 }
 
@@ -427,6 +432,14 @@ def zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpNotification cmd)
     runInMillis(200, deviceSync)
 }
 
+void zwaveEvent(hubitat.zwave.commands.versionv2.VersionReport cmd)
+{
+    if (logEnable) log.debug "VersionReport: ${cmd}"
+    device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
+    device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
+    device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
+}
+
 def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
     encapCmd = cmd.encapsulatedCommand()
     if (encapCmd)
@@ -440,7 +453,7 @@ def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cm
 
 def zwaveEvent(hubitat.zwave.Command cmd)
 {
-    if (logEnable) log.debug "Unhandled cmd: ${cmd.toString()}"
+    log.warn "Unhandled cmd: ${cmd.toString()}"
     return null
 }
 

@@ -34,6 +34,9 @@
 // The Static Controller driver doesn't offer any usable functions.
 // All usable functions are in the Virtual Node driver.
 //
+// Version 1.0.0    Initial release
+// Version 1.1.0    Unhandled events logged as warnings
+//
 
 metadata
 {
@@ -56,19 +59,19 @@ preferences
 // Effectively unused...
 def parse(String description)
 {
-    hubitat.zwave.Command cmd = zwave.parse(description,commandClassVersions)
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
     if (cmd)
     {
         return zwaveEvent(cmd)
     }
 
-    if (logEnable) log.debug "Non Z-Wave parse event: ${description}"
+    log.warn "Non Z-Wave parse event: ${description}"
     return null
 }
 
 def zwaveEvent(hubitat.zwave.Command cmd)
 {
-    if (logEnable) log.debug "Unhandled cmd: ${cmd.toString()}"
+    log.warn "Unhandled cmd: ${cmd.toString()}"
     return null
 }
 

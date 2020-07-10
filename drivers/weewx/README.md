@@ -6,7 +6,7 @@ There are two components required:
 
 * The Hubitat device driver, located in this directory.
 
-* The WeeWX user extension, located [here](https://github.com/dennypage/weewx-hubitat)
+* The WeeWX user extension, located [here](https://github.com/dennypage/weewx-hubitat).
 
 
 #### Hubitat device driver
@@ -38,3 +38,34 @@ The WeeWX extension can be found [here](https://github.com/dennypage/weewx-hubit
   - If the Hubitat needs different units (US/METRIC) than WeeWX is natively configured for for, you can add a target_unit option to the [[Hubitat]] section. Avalable options can be found in the [StdConvert] section of the config file.
 
 * Restart the WeeWX server.
+
+
+### Attributes of the Hubitat device
+
+The hubitat device driver provides the following attributes (if available in WeeWX):
+
+| Hubitat device attribute  | WeeWX Internal name      | Description              |
+| :------------------------ | :------------------------| :------------------------|
+| temperature | outTemp | Temperature | 
+| humidity | outHumidity | Humidity |
+| windSpeed | windSpeed | Wind speed |
+| windDirection | windDir | Wind direction |
+| windGustSpeed | windGust | Wind gust speed |
+| windGustDirection | windGustDir | Wind gust direction |
+| apptemp | appTemp | Apparent temperature |
+| heatindex | heatindex | Heat index |
+| humidex | humidex | Humidity Index |
+| windchill | windchill | Windchill |
+| rain | rain | Rain |
+| rainRate | rainRate | Rain rate |
+| hourRain | hourRain | Rain in the last hour |
+| dayRain | dayRain | Rain today (since midnight) |
+| rain24 | rain24 | Rain in the last 24 hours |
+| barometer | barometer | Barometric pressure |
+| dewpoint | dewpoint | Dew point |
+| cloudbase | cloudbase | Cloud base |
+| uv | UV | Ultraviolet radiation |
+| radiation | radiation | Solar irradiance |
+| THSW | THSW | Temperature Humidity Solar Wind |
+
+Note that some attributes may not be available for your weather station.

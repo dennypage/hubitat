@@ -1,5 +1,7 @@
 ### WeeWX to Hubitat
 
+This package provides a direct local connection for posting data from the WeeWX server to the Hubitat
+
 There are two components required:
 
 * The Hubitat device driver, located in this directory.

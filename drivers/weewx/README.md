@@ -40,7 +40,7 @@ The WeeWX extension can be found [here](https://github.com/dennypage/weewx-hubit
 * Restart the WeeWX server.
 
 
-### Attributes of the Hubitat device
+### Attributes of the Hubitat WeeWX device
 
 The hubitat device driver provides the following attributes (if available in WeeWX):
 

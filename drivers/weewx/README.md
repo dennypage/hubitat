@@ -4,7 +4,7 @@ There are two components required:
 
 * The Hubitat device driver, located in this directory.
 
-* The WeeWX user extension. The WeeWX user extension is located [here](https://github.com/dennypage/weewx-hubitat)
+* The WeeWX user extension, located [here](https://github.com/dennypage/weewx-hubitat)
 
 
 #### Hubitat device driver

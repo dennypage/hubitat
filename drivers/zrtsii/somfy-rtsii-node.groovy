@@ -52,6 +52,8 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Unhandled events logged as warnings
+// Version 1.1.1    Fix issue with null current position
+
 //
 
 metadata
@@ -199,7 +201,7 @@ def setPosition(BigDecimal newPosition)
         pauseExecution(100)
     }
     
-    BigDecimal oldPosition = device.currentValue("position")
+    BigDecimal oldPosition = device.currentValue("position") ?: 0
     if (newPosition == oldPosition) return
 
     Boolean upDown

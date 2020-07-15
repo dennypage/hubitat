@@ -53,7 +53,6 @@
 // Version 1.0.0    Initial release
 // Version 1.1.0    Unhandled events logged as warnings
 // Version 1.1.1    Fix issue with null current position
-
 //
 
 metadata

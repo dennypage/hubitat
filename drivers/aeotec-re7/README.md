@@ -2,10 +2,10 @@
 
 This driver supports the Range Extender 7 manufactured by Aeotec.
 
-Please note that as of this writting (firmware version 1.1), there are a couple of
+Please note that as of this writing (firmware version 1.1), there are a couple of
 unexpected behaviors with the RE7:
 
-## Indicator does not always work as expected
+#### Indicator does not always work as expected
 Following network inclusion, the indicator remains illuminated as expected. Double clicking
 the "action button" enables and disables the indicator as documented. However as soon as the
 illuminator status is queried (INDICATOR_GET) by the Refresh command, the device disables
@@ -15,7 +15,7 @@ command.  Even once the indicators been enabled by the Configure command, if the
 is subsequently disabled and re-enabled via the action button, the indicator will again be
 completely disabled as soon as a Refresh command is executed.
 
-## Setting transmit power level does not work
+#### Setting transmit power level does not work
 The RE7 appears to ignore POWERLEVEL_SET. Regardless of what value is sent with POWERLEVEL_SET,
 POWERLEVEL_GET always returns 0 (NORMAL). I've also not been able to detect a difference in
 transmission power during normal operation. In sort, "Transmit power level" in the Preferences
@@ -25,4 +25,4 @@ The RE7 does however pay attention to the power level specified with POWERLEVEL_
 so the Range Test command works as expected.
 
 
-# Support tickets for both issues have been rasied with Aeotec.
+#### Support tickets for both issues have been raised with Aeotec.

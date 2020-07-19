@@ -1,6 +1,7 @@
 # Hubitat drivers and applications
 
 ### Drivers:
+* [Aeotec Range Extender 7](drivers/aeotec-re7)
 * [Philio PAT02-B Temperature / Humidity sensor](drivers/pat02-b)
 * [Somfy Z-Wave to RTS Interface II (ZRTSII)](drivers/zrtsii)
 * [WeeWX to Hubitat device](drivers/weewx)

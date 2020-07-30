@@ -26,6 +26,8 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Version 1.0.0    Initial release
+// Version 1.0.1    Fix incorrect event name when no range test has been run
+
 //
 
 metadata
@@ -220,7 +222,7 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
     // Check test validity
     if (cmd.testNodeid == 0)
     {
-        sendEvent(name: "test", value: "none")
+        sendEvent(name: "rangeTest", value: "none")
         return
     }
     

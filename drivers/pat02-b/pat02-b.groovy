@@ -28,6 +28,7 @@
 // Version 1.0.0    Initial release
 // Version 1.1.0    Report version information for protocol, hardware and firmware.
 //                  Unhandled events logged as warnings.
+// Version 1.2.0    Add support for setting the wakeup interval.
 //
 
 metadata
@@ -114,16 +115,20 @@ preferences
     // Humidity offset: Adjustment amount for humidity measurement
     input name: "humidityOffset", title: "Humidity offset percent",
         type: "decimal", defaultValue: "0"
-    
+
+    // Wakeup Interval: Number of seconds between wakeups
+    input name: "wakeupInterval", title: "Wakeup Interval seconds",
+        type: "decimal", defaultValue: "86400"
+
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
 }
-  
+
 def deviceSync()
 {
     resync = state.pendingResync
     refresh = state.pendingRefresh
-    
+
     state.pendingResync = false
     state.pendingRefresh = false
 
@@ -133,9 +138,8 @@ def deviceSync()
     if (resync)
     {
         cmds.add(secureCmd(zwave.versionV2.versionGet()))
-        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalGet()))
     }
-    
+
     value = temperatureDifferential ? temperatureDifferential.toInteger() : 1
     if (resync || state.temperatureDifferential != value)
     {
@@ -143,7 +147,7 @@ def deviceSync()
         cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 21, size: 1)))
         cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 21)))
     }
-    
+
     value = humidityDifferential ? humidityDifferential.toInteger() : 5
     if (resync || state.humidityDifferential != value)
     {
@@ -151,7 +155,7 @@ def deviceSync()
         cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 23, size: 1)))
         cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 23)))
     }
-   
+
     value = tickInterval ? tickInterval.toInteger() : 30
     if (resync || state.tickInterval != value)
     {
@@ -162,15 +166,15 @@ def deviceSync()
 
     value = batteryInterval ? batteryInterval.toInteger() : 12
     if (resync || state.batteryInterval != value)
-    {   
+    {
         log.warn "Updating device batteryInterval: ${value}"
         cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 10, size: 1)))
         cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 10)))
     }
-    
+
     value = temperatureInterval ? temperatureInterval.toInteger() : 12
     if (resync || state.temperatureInterval != value)
-    {   
+    {
         log.warn "Updating device temperatureInterval: ${value}"
         cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 13, size: 1)))
         cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 13)))
@@ -178,10 +182,18 @@ def deviceSync()
 
     value = humidityInterval ? humidityInterval.toInteger() : 12
     if (resync || state.humidityInterval != value)
-    {   
+    {
         log.warn "Updating device humidityInterval: ${value}"
         cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 14, size: 1)))
         cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 14)))
+    }
+
+    value = wakeupInterval ? wakeupInterval.toInteger() : 86400
+    if (resync || state.wakeupInterval != value)
+    {
+        log.warn "Updating device wakeupInterval: ${value}"
+        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value, nodeid: zwaveHubNodeId)))
+        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalGet()))
     }
 
     if (refresh)
@@ -212,7 +224,7 @@ void installed()
 void updated()
 {
     if (logEnable) log.debug "Updated preferences"
-    
+
     // Validate numbers in preferences
     if (temperatureDifferential)
     {
@@ -268,6 +280,15 @@ void updated()
             device.updateSetting("humidityInterval", value)
         }
     }
+    if (wakeupInterval)
+    {
+        value = (wakeupInterval.toBigDecimal()).toInteger()
+        if (value != wakeupInterval)
+        {
+            log.warn "wakeupInterval must be an integer: ${wakeupInterval} changed to ${value}"
+            device.updateSetting("wakeupInterval", value)
+        }
+    }
 
     log.warn "debug logging is ${logEnable}"
     log.warn "description logging is ${txtEnable}"
@@ -278,13 +299,13 @@ def configure()
     state.pendingResync = true
     log.warn "Configuration will resync when device wakes up"
 }
-  
+
 def refresh()
 {
     state.pendingRefresh = true
     log.warn "Data will refresh when device wakes up"
 }
-  
+
 def clearTamper() {
     def map = [:]
     map.name = "tamper"
@@ -457,7 +478,8 @@ def zwaveEvent(hubitat.zwave.Command cmd)
     return null
 }
 
-private secureCmd(cmd) {
+private secureCmd(cmd)
+{
     if (getDataValue("zwaveSecurePairingComplete") == "true")
     {
         return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
@@ -465,6 +487,5 @@ private secureCmd(cmd) {
     else
     {
         return cmd.format()
-    }    
+    }
 }
-

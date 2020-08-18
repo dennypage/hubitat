@@ -27,7 +27,9 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.0.1    Fix incorrect event name when no range test has been run
-
+// Version 1.1.0    Don't indicate range test as in progress until the device
+//                  responds. Provide feedback on the count of frames received
+//                  as an attribute.
 //
 
 metadata
@@ -38,11 +40,12 @@ metadata
     {
         capability "Configuration"
         capability "Refresh"
-        
-        attribute "rangeTest", "string"
+
         attribute "indicator", "string"
         attribute "powerLevel", "string"
-        
+        attribute "rangeTest", "string"
+        attribute "rangeTestReceived", "string"
+
         command "rangeTest", [[name: "node*", type: "NUMBER", description: "Node to test against"],
                               [name: "power", type: "ENUM", constraints: ["normal",
                                                           "-1dBm", "-2dBm", "-3dBm",
@@ -86,7 +89,7 @@ preferences
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
 }
-  
+
 void logsOff()
 {
     device.updateSetting("logEnable", [value:"false", type:"bool"])
@@ -107,7 +110,7 @@ def refresh()
     cmds.add(secureCmd(zwave.versionV3.versionGet()))
     cmds.add(secureCmd(zwave.powerlevelV1.powerlevelGet()))
     cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet()))
-    delayBetween(cmds, 250)
+    delayBetween(cmds, 200)
 }
 
 def configure()
@@ -126,16 +129,16 @@ def configure()
     cmds.add(secureCmd(zwave.indicatorV3.indicatorSet(value: indicatorValue)))
     cmds.add(secureCmd(zwave.powerlevelV1.powerlevelGet()))
     cmds.add(secureCmd(zwave.indicatorV3.indicatorGet()))
-    delayBetween(cmds, 250)
+    delayBetween(cmds, 200)
 }
-  
+
 def updated()
 {
     if (logEnable) log.debug "Updated preferences"
-    
+
     log.warn "debug logging is ${logEnable}"
     log.warn "description logging is ${txtEnable}"
-    
+
     runIn(1, configure)
 }
 
@@ -158,21 +161,28 @@ def rangeTest(Number node, String powerString)
         log.error "Invalid test node ${node}"
         return null
     }
-    
+
     def power = stringToPowerLevel(powerString)
     def frames = testFrames ? testFrames.toInteger() : 10
-    
+
     def map = [:]
     map.name = "rangeTest"
-    map.value = "in progress"
+    map.value = "pending"
     if (txtEnable) map.descriptionText = "sending ${frames} frames to node ${node} at power level ${powerString}"
     sendEvent(map)
+    log.info "Range test pending with node ${node}: sending ${frames} frames at power level ${powerString}"
 
-    log.info "Range test starting with node ${node}: sending ${frames} frames at power level ${powerString}"
-   
-    secureCmd(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
-                                                       testFrameCount: frames,
-                                                       testNodeid: node))
+    def cmds = []
+    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
+                                                                testFrameCount: frames,
+                                                                testNodeid: node)))
+    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet()))
+    delayBetween(cmds, 100)
+}
+
+def requestTestNode()
+{
+    secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet())
 }
 
 def parse(String description)
@@ -204,7 +214,7 @@ void zwaveEvent(hubitat.zwave.commands.indicatorv3.IndicatorReport cmd)
 def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
 {
     if (logEnable) log.debug "PowerLevelReport: ${cmd.toString()}"
-    
+
     power = powerLevelToString(cmd.powerLevel)
     log.info "Power level ${power}, timeout ${cmd.timeout}"
 
@@ -217,6 +227,8 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
 
 def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
 {
+    unschedule(requestTestNode)
+
     if (logEnable) log.debug "PowerLevelTestNodeReport: ${cmd.toString()}"
 
     // Check test validity
@@ -225,7 +237,8 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
         sendEvent(name: "rangeTest", value: "none")
         return
     }
-    
+
+    def Boolean inProgress = false
     switch (cmd.statusOfOperation)
     {
         case 0:    // ZW_TEST_FAILED
@@ -235,6 +248,7 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
             status = "succeeded"
             break
         case 2:    // ZW_TEST_INPROGRESS
+            inProgress = true
             status = "in progress"
             break
     }
@@ -243,12 +257,21 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
     def map = [:]
     map.name = "rangeTest"
     map.value = "${status}"
-    if (txtEnable) map.descriptionText = "received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
     sendEvent(map)
+
+    map.name = "rangeTestReceived"
+    map.value = "${cmd.testFrameCount}"
+    if (txtEnable && !inProgress) map.descriptionText = "received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
+    sendEvent(map)
+
+    if (inProgress)
+    {
+        runIn(1, requestTestNode)
+    }
 }
 
 void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd)
-{   
+{
     if (logEnable) log.debug "VersionReport: ${cmd}"
     device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
     device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
@@ -282,6 +305,5 @@ private secureCmd(cmd) {
     else
     {
         return cmd.format()
-    }    
+    }
 }
-

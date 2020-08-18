@@ -3,7 +3,7 @@
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
   "version": "1.0",
-  "dateReleased": "2020-07-30",
+  "dateReleased": "2020-08-17",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/aeotec-re7",
   "communityLink": "https://community.hubitat.com/t/https://community.hubitat.com/t/release-aeotec-range-extender-7/45303",
   "drivers": [
@@ -12,7 +12,7 @@
       "name": "Aeotec Range Extender 7",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/aeotec-re7/aeotec-range-extender-7.groovy"
-      "version": "1.0.1",
+      "version": "1.2.0",
       "required": true
     }
   ]

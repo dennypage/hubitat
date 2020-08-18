@@ -5,7 +5,7 @@
   "version": "1.0",
   "dateReleased": "2020-08-17",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/aeotec-re7",
-  "communityLink": "https://community.hubitat.com/t/https://community.hubitat.com/t/release-aeotec-range-extender-7/45303",
+  "communityLink": "https://community.hubitat.com/t/release-aeotec-range-extender-7/45303",
   "drivers": [
     {
       "id": "44185675-6a6b-4b5a-9a58-8fb8d9019560",

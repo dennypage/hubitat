@@ -30,6 +30,8 @@
 // Version 1.1.0    Don't indicate range test as in progress until the device
 //                  responds. Provide feedback on the count of frames received
 //                  as an attribute.
+// Version 1.2.0    Power level set is a temporary setting for testing and
+//                  requires a timeout value.
 //
 
 metadata
@@ -45,6 +47,13 @@ metadata
         attribute "powerLevel", "string"
         attribute "rangeTest", "string"
         attribute "rangeTestReceived", "string"
+
+        command "powerTest", [[name: "seconds", type: "NUMBER", defaultValue: "0",
+                               description: "Seconds before returning to normal power"],
+                              [name: "power", type: "ENUM", constraints: ["normal",
+                                                          "-1dBm", "-2dBm", "-3dBm",
+                                                          "-4dBm", "-5dBm", "-6dBm",
+                                                          "-7dBm", "-8dBm", "-9dBm"]]]
 
         command "rangeTest", [[name: "node*", type: "NUMBER", description: "Node to test against"],
                               [name: "power", type: "ENUM", constraints: ["normal",
@@ -76,12 +85,6 @@ preferences
 {
     input name: "indicator", title: "Indicator light",
         type: "bool", defaultValue: "0"
-
-    input name: "powerLevel", title: "Transmit power level",
-        type: "enum", defaultValue: "0", options: [[0: "normal [default]"],
-                                                   [1: "-1dBm"], [2: "-2dBm"], [3: "-3dBm"],
-                                                   [4: "-4dBm"], [5: "-5dBm"], [6: "-6dBm"],
-                                                   [7: "-7dBm"], [8: "-8dBm"], [9: "-9dBm"]]
 
     input name: "testFrames", title: "Frame count for range testing",
         type: "number", defaultValue: "10", range: "1..255"
@@ -118,16 +121,9 @@ def configure()
     if (logEnable) log.debug "Configure"
 
     Integer indicatorValue = indicator ? 0xFF : 0
-    Integer powerValue = powerLevel ? powerLevel.toInteger() : 0
-
-    def power = powerLevelToString(powerValue)
-    log.info "setting power value to ${power} (may have no effect)"
 
     def cmds = []
-    // NB: Setting power value may have no effect.
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelSet(powerLevel: powerValue)))
     cmds.add(secureCmd(zwave.indicatorV3.indicatorSet(value: indicatorValue)))
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelGet()))
     cmds.add(secureCmd(zwave.indicatorV3.indicatorGet()))
     delayBetween(cmds, 200)
 }
@@ -154,6 +150,22 @@ static Integer stringToPowerLevel(String string)
     return 0
 }
 
+def powerTest(Number seconds, String powerString)
+{
+    if (seconds < 0 || seconds > 255)
+    {
+        log.error "Invalid powerTest seconds ${seconds}"
+        return null
+    }
+
+    def power = stringToPowerLevel(powerString)
+
+    def cmds = []
+    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelSet(powerLevel: power, timeout: seconds)))
+    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelGet()))
+    delayBetween(cmds, 200)
+}
+
 def rangeTest(Number node, String powerString)
 {
     if (node < 1)
@@ -178,6 +190,11 @@ def rangeTest(Number node, String powerString)
                                                                 testNodeid: node)))
     cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet()))
     delayBetween(cmds, 100)
+}
+
+def requestPowerLevel()
+{
+    secureCmd(zwave.powerlevelV1.powerlevelGet())
 }
 
 def requestTestNode()
@@ -213,6 +230,8 @@ void zwaveEvent(hubitat.zwave.commands.indicatorv3.IndicatorReport cmd)
 
 def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
 {
+    unschedule(requestPowerLevel)
+
     if (logEnable) log.debug "PowerLevelReport: ${cmd.toString()}"
 
     power = powerLevelToString(cmd.powerLevel)
@@ -223,6 +242,11 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
     map.value = "${power}"
     if (txtEnable) map.descriptionText = "transmit power level"
     sendEvent(map)
+
+    if (cmd.timeout)
+    {
+        runIn(cmd.timeout, requestPowerLevel)
+    }
 }
 
 def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
@@ -278,7 +302,8 @@ void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd)
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
 }
 
-def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
+def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd)
+{
     encapCmd = cmd.encapsulatedCommand()
     if (encapCmd)
     {
@@ -295,11 +320,10 @@ def zwaveEvent(hubitat.zwave.Command cmd)
     return null
 }
 
-private secureCmd(cmd) {
-    if (getDataValue("zwaveSecurePairingComplete") == "true" && 0)
+private secureCmd(cmd)
+{
+    if (getDataValue("zwaveSecurePairingComplete") == "true")
     {
-        if (logEnable) log.debug "Secure"
-
         return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
     }
     else

@@ -29,6 +29,7 @@
 // Version 1.1.0    Report version information for protocol, hardware and firmware.
 //                  Unhandled events logged as warnings.
 // Version 1.2.0    Add support for setting the wakeup interval.
+// Version 1.3.0    Move to Wakeup interval in minutes and improve validity checks.
 //
 
 metadata
@@ -108,6 +109,10 @@ preferences
         description: "0 disables auto reporting",
         type: "number", defaultValue: "12", range: "0..127"
 
+    // Wakeup Interval: Number of minutes between wakeups
+    input name: "wakeUpInterval", title: "Wakeup interval minutes",
+        type: "number", defaultValue: "1440", range: "30..7200"
+
     // Temperature offset: Adjustment amount for temperature measurement
     input name: "temperatureOffset", title: "Temperature offset degrees",
         type: "decimal", defaultValue: "0"
@@ -115,10 +120,6 @@ preferences
     // Humidity offset: Adjustment amount for humidity measurement
     input name: "humidityOffset", title: "Humidity offset percent",
         type: "decimal", defaultValue: "0"
-
-    // Wakeup Interval: Number of seconds between wakeups
-    input name: "wakeupInterval", title: "Wakeup Interval seconds",
-        type: "decimal", defaultValue: "86400"
 
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
@@ -188,11 +189,11 @@ def deviceSync()
         cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 14)))
     }
 
-    value = wakeupInterval ? wakeupInterval.toInteger() : 86400
-    if (resync || state.wakeupInterval != value)
+    value = wakeUpInterval ? wakeUpInterval.toInteger() : 1440
+    if (resync || state.wakeUpInterval != value)
     {
-        log.warn "Updating device wakeupInterval: ${value}"
-        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value, nodeid: zwaveHubNodeId)))
+        log.warn "Updating device wakeUpInterval: ${value}"
+        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value * 60, nodeid: zwaveHubNodeId)))
         cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalGet()))
     }
 
@@ -225,10 +226,12 @@ void updated()
 {
     if (logEnable) log.debug "Updated preferences"
 
+    Integer value
+
     // Validate numbers in preferences
     if (temperatureDifferential)
     {
-        value = (temperatureDifferential.toBigDecimal()).toInteger()
+        value = temperatureDifferential.toBigDecimal()
         if (value != temperatureDifferential)
         {
             log.warn "temperatureDifferential must be an integer: ${temperatureDifferential} changed to ${value}"
@@ -237,7 +240,7 @@ void updated()
     }
     if (humidityDifferential)
     {
-        value = (humidityDifferential.toBigDecimal()).toInteger()
+        value = humidityDifferential.toBigDecimal()
         if (value != humidityDifferential)
         {
             log.warn "humidityDifferential must be an integer: ${humidityDifferential} changed to ${value}"
@@ -246,7 +249,7 @@ void updated()
     }
     if (tickInterval)
     {
-        value = (tickInterval.toBigDecimal()).toInteger()
+        value = tickInterval.toBigDecimal()
         if (value != tickInterval)
         {
             log.warn "tickInterval must be an integer: ${tickInterval} changed to ${value}"
@@ -255,7 +258,7 @@ void updated()
     }
     if (batteryInterval)
     {
-        value = (batteryInterval.toBigDecimal()).toInteger()
+        value = batteryInterval.toBigDecimal()
         if (value != batteryInterval)
         {
             log.warn "batteryInterval must be an integer: ${batteryInterval} changed to ${value}"
@@ -264,7 +267,7 @@ void updated()
     }
     if (temperatureInterval)
     {
-        value = (temperatureInterval.toBigDecimal()).toInteger()
+        value = temperatureInterval.toBigDecimal()
         if (value != temperatureInterval)
         {
             log.warn "temperatureInterval must be an integer: ${temperatureInterval} changed to ${value}"
@@ -273,20 +276,36 @@ void updated()
     }
     if (humidityInterval)
     {
-        value = (humidityInterval.toBigDecimal()).toInteger()
+        value = humidityInterval.toBigDecimal()
         if (value != humidityInterval)
         {
             log.warn "humidityInterval must be an integer: ${humidityInterval} changed to ${value}"
             device.updateSetting("humidityInterval", value)
         }
     }
-    if (wakeupInterval)
+    if (wakeUpInterval)
     {
-        value = (wakeupInterval.toBigDecimal()).toInteger()
-        if (value != wakeupInterval)
+        value = wakeUpInterval.toBigDecimal()
+        if (value < 30)
         {
-            log.warn "wakeupInterval must be an integer: ${wakeupInterval} changed to ${value}"
-            device.updateSetting("wakeupInterval", value)
+            value = 30
+        }
+        else if (value > 7200)
+        {
+            value = 7200
+        }
+        else
+        {
+            Integer r = value % 30
+            if (r)
+            {
+                value += 30 - r
+            }
+        }
+        if (value != wakeUpInterval)
+        {
+            log.warn "wakeUpInterval must be an integer multiple of 30 between 30 and 7200: ${wakeUpInterval} changed to ${value}"
+            device.updateSetting("wakeUpInterval", value)
         }
     }
 
@@ -443,8 +462,8 @@ def zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd)
 
 def zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpIntervalReport cmd)
 {
-    state.wakeUpInterval = cmd.seconds
-    if (logEnable) log.debug "${device.displayName} wakup interval ${cmd.seconds}"
+    state.wakeUpInterval = cmd.seconds / 60
+    if (logEnable) log.debug "${device.displayName} wakup interval ${state.wakeUpInterval} minutes"
 }
 
 def zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpNotification cmd)

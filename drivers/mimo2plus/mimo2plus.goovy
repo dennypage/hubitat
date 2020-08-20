@@ -1,0 +1,238 @@
+//
+// Copyright (c) 2020, Denny Page
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+// TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Version 0.0.1    Testing
+//
+
+// MIMO2+ endpoints
+// Endpoint 1:    SIG1 (input 1)
+// Endpoint 2:    SIG2 (input 2)
+// Endpoint 3:    Relay 1
+// Endpoint 4:    Relay 2
+
+
+metadata
+{
+    definition (
+        name: "Frotezz MIMO2+", namespace: "cococafe", author: "Denny Page"
+    )
+    {
+        capability "Refresh"
+        capability "Configuration"
+
+        command "relayOneOn"
+        command "relayOneOff"
+
+        command "relayTwoOn"
+        command "relayTwoOff"
+
+        fingerprint mfr: "0084", prod: "0463", deviceId: "0208",
+            inClusters: "0x5E,0x85,0x86,0x8E,0x73,0x20,0x71,0x25,0x31,0x70,0x60,0x7A,0x72,0x5A,0x59,0x98"
+
+        // inClusters: 0x5E,0x86,0x72,0x5A,0x59,0x98
+        // secureInClusters: 0x85,0x8E,0x73,0x20,0x71,0x25,0x31,0x70,0x60,0x7A
+
+        // 0x20 COMMAND_CLASS_BASIC
+        // 0x25 COMMAND_CLASS_SWITCH_BINARY
+        // 0x31 COMMAND_CLASS_SENSOR_MULTILEVEL_V9
+        // 0x59 COMMAND_CLASS_ASSOCIATION_GRP_INFO
+        // 0x5A COMMAND_CLASS_DEVICE_RESET_LOCALLY
+        // 0x5E COMMAND_CLASS_ZWAVEPLUS_INFO_V2
+        // 0x60 COMMAND_CLASS_MULTI_CHANNEL_V4
+        // 0x70 COMMAND_CLASS_CONFIGURATION
+        // 0x71 COMMAND_CLASS_ALARM_V2
+        // 0x71 COMMAND_CLASS_NOTIFICATION_V4
+        // 0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
+        // 0x73 COMMAND_CLASS_POWERLEVEL
+        // 0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2
+        // 0x85 COMMAND_CLASS_ASSOCIATION_V2
+        // 0x86 COMMAND_CLASS_VERSION_V2
+        // 0x8E COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V3
+        // 0x98 COMMAND_CLASS_SECURITY
+    }
+}
+
+preferences
+{
+
+    input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
+    input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
+}
+
+void logsOff()
+{
+    device.updateSetting("logEnable", [value:"false", type:"bool"])
+    log.warn "debug logging disabled"
+}
+
+void installed()
+{
+}
+
+void updated()
+{
+    if (logEnable) log.debug "Updated preferences"
+
+    // FIXME
+
+    log.warn "debug logging is ${logEnable}"
+    log.warn "description logging is ${txtEnable}"
+}
+
+def relayOneOn()
+{
+    log.debug "Relay one on"
+    def cmds = []
+    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0xff), 3)))
+    delayBetween(cmds, 200)
+}
+
+def relayOneOff()
+{
+    log.debug "Relay one off"
+    def cmds = []
+    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0x00), 3)))
+    delayBetween(cmds, 200)
+}
+
+def relayTwoOn()
+{
+    log.debug "Relay two on"
+    def cmds = []
+    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0xff), 4)))
+    delayBetween(cmds, 200)
+}
+
+def relayTwoOff()
+{
+    log.debug "Relay two off"
+    def cmds = []
+    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0x00), 4)))
+    delayBetween(cmds, 200)
+}
+
+
+def configure()
+{
+    if (logEnable) log.debug "Configure"
+
+}
+
+def refresh()
+{
+    if (logEnable) log.debug "Refresh"
+
+    def cmds = []
+    cmds.add(secureCmd(zwave.versionV3.versionGet()))
+    cmds.add(secureCmd(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 1)))
+    cmds.add(secureCmd(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 2)))
+    cmds.add(secureCmd(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 3)))
+    cmds.add(secureCmd(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 4)))
+    delayBetween(cmds, 200)
+}
+
+def parse(String description)
+{
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
+    if (cmd)
+    {
+        return zwaveEvent(cmd)
+    }
+
+    log.warn "Non Z-Wave parse event: ${description}"
+    return null
+}
+
+def zwaveEvent(int endPoint, hubitat.zwave.commands.switchbinaryv2.SwitchBinaryReport cmd)
+{
+    // FIXME
+
+    log.warn "Unhandled SwitchBinaryReport from endpoint ${endPoint}: ${cmd.toString()}"
+}
+
+def zwaveEvent(int endPoint, hubitat.zwave.commands.sensormultilevelv9.SensorMultilevelReport cmd)
+{
+    // FIXME
+
+    log.warn "Unhandled SensorMultilevelReport from endpoint ${endPoint}: ${cmd.toString()}"
+}
+
+void zwaveEvent(hubitat.zwave.commands.versionv2.VersionReport cmd)
+{
+    if (logEnable) log.debug "VersionReport: ${cmd}"
+    device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
+    device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
+    device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
+}
+
+def zwaveEvent(hubitat.zwave.commands.multichannelv4.MultiChannelCmdEncap cmd)
+{
+    def encapCmd = cmd.encapsulatedCommand()
+    log.debug ("Encapsulated endpoint ${cmd.sourceEndPoint}: ${encapCmd}")
+
+    if (encapCmd)
+    {
+        return zwaveEvent(cmd.sourceEndPoint, encapCmd)
+    }
+
+    log.warn "Unable to extract multichannel encapsulated cmd: ${cmd.toString()}"
+    return null
+}
+
+def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
+    encapCmd = cmd.encapsulatedCommand()
+    if (encapCmd)
+    {
+        return zwaveEvent(encapCmd)
+    }
+
+    log.warn "Unable to extract security encapsulated cmd: ${cmd.toString()}"
+    return null
+}
+
+def zwaveEvent(hubitat.zwave.Command cmd)
+{
+    log.warn "Unhandled cmd: ${cmd.toString()}"
+    return null
+}
+
+private endpointCmd(cmd, endpoint)
+{
+    zwave.multiChannelV3.multiChannelCmdEncap(bitAddress: false, sourceEndPoint:0, destinationEndPoint: endpoint).encapsulate(cmd)
+}
+
+private secureCmd(cmd)
+{
+    if (getDataValue("zwaveSecurePairingComplete") == "true")
+    {
+        return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
+    }
+    else
+    {
+        return cmd.format()
+    }
+}

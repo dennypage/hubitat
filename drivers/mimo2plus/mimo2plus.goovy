@@ -38,7 +38,7 @@
 metadata
 {
     definition (
-        name: "Frotezz MIMO2+", namespace: "cococafe", author: "Denny Page"
+        name: "Fortrezz MIMO2+", namespace: "cococafe", author: "Denny Page"
     )
     {
         capability "Refresh"
@@ -78,6 +78,27 @@ metadata
 
 preferences
 {
+    // REL1: Parameter 1, default 0x05
+    //        Bits 7-5 relay mapping:
+    //            b7: trigger requires both SIG1 and SIG2
+    //            b6: enable trigger by SIG2
+    //            b5: enable trigger by SIG1
+    //        Bits 4-0 automatic relay release time in 100ms increments (0 to disable)
+    //
+    input name: "rel1", title: "Relay 1 configuration",
+        description: "see manual for bit values",
+        type: "number", defaultValue: "5", range: "0..255"
+
+    // REL2: Parameter 2, default 0x05
+    //       (see REL1 for details)
+    input name: "rel1", title: "Relay 2 configuration",
+        description: "see manual for bit values",
+        type: "number", defaultValue: "5", range: "0..255"
+
+    // SIG1: Parameter 3, default 0xA8
+    input name: "sig1multilevel", title: "Signal 1 Multilevel Trigger",
+        description: "see manual for bit values",
+        type: "number", defaultValue: "168", range: "0..255"
 
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
@@ -148,8 +169,26 @@ def refresh()
 
     def cmds = []
     cmds.add(secureCmd(zwave.versionV3.versionGet()))
+
+    // Relay configs
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 1)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 2)))
+    // Signal 1 configs
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 3)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 4)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 5)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 6)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 7)))
+    // Signal 2 configs
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 9)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 10)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 11)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 13)))
+    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 14)))
+    // Signal status
     cmds.add(secureCmd(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 1)))
     cmds.add(secureCmd(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 2)))
+    // Relay status
     cmds.add(secureCmd(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 3)))
     cmds.add(secureCmd(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 4)))
     delayBetween(cmds, 200)
@@ -188,6 +227,54 @@ void zwaveEvent(hubitat.zwave.commands.versionv2.VersionReport cmd)
     device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
 }
+
+def zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd)
+{
+    if (logEnable) log.debug "ConfigurationReport: ${cmd.toString()}"
+
+    switch (cmd.parameterNumber)
+    {
+        case 1:
+            state.rel1Config = cmd.configurationValue[0]
+            break
+        case 2:
+            state.rel2Config = cmd.configurationValue[0]
+            break
+        case 3:
+            state.sig1MultiTriggerSettings = cmd.configurationValue[0]
+            break
+        case 4:
+            state.sig1LowerThresholdHigh = cmd.configurationValue[0]
+            break
+        case 5:
+            state.sig1LowerThresholdLow = cmd.configurationValue[0]
+            break
+        case 6:
+            state.sig1UpperThresholdHigh = cmd.configurationValue[0]
+            break
+        case 7:
+            state.sig1UpperThresholdLow = cmd.configurationValue[0]
+            break
+        case 9:
+            state.sig2MultiTriggerSettings = cmd.configurationValue[0]
+            break
+        case 10:
+            state.sig2LowerThresholdHigh = cmd.configurationValue[0]
+            break
+        case 11:
+            state.sig2LowerThresholdLow = cmd.configurationValue[0]
+            break
+        case 12:
+            state.sig2UpperThresholdHigh = cmd.configurationValue[0]
+            break
+        case 13:
+            state.sig2UpperThresholdLow = cmd.configurationValue[0]
+            break
+        default:
+            if (logEnable) log.debug "Unknown Configuration Report Received ConfigurationReport: ${cmd.toString()}"
+    }
+}
+
 
 def zwaveEvent(hubitat.zwave.commands.multichannelv4.MultiChannelCmdEncap cmd)
 {

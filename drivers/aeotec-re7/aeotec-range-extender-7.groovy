@@ -32,6 +32,7 @@
 //                  as an attribute.
 // Version 1.2.0    Power level set is a temporary setting for testing and
 //                  requires a timeout value.
+// Version 1.2.1    Clarify that node for range test needs to be decimal
 //
 
 metadata
@@ -55,7 +56,7 @@ metadata
                                                           "-4dBm", "-5dBm", "-6dBm",
                                                           "-7dBm", "-8dBm", "-9dBm"]]]
 
-        command "rangeTest", [[name: "node*", type: "NUMBER", description: "Node to test against"],
+        command "rangeTest", [[name: "node*", type: "NUMBER", description: "Node to test against (decimal)"],
                               [name: "power", type: "ENUM", constraints: ["normal",
                                                           "-1dBm", "-2dBm", "-3dBm",
                                                           "-4dBm", "-5dBm", "-6dBm",

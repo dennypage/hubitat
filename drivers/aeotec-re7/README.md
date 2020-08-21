@@ -17,4 +17,4 @@ command.  Even once the indicators been enabled by the Configure command, if the
 is subsequently disabled and re-enabled via the action button, the indicator will again be
 completely disabled as soon as a Refresh command is executed.
 
-**I have received confirmation from Aeotec that this issue is being addressed.**
+**I have received confirmation from Aeotec that this issue is addressed in firmware 1.2 in September.**

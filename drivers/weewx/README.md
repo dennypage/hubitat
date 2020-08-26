@@ -36,6 +36,8 @@ The WeeWX extension can be found [here](https://github.com/dennypage/weewx-hubit
   - If you want to change the interval at which data is posted to the Hubitat, you can change the post_interval parameter. The default is 60 seconds.
 
   - If the Hubitat needs different units (US/METRIC) than WeeWX is natively configured for for, you can add a target_unit option to the [[Hubitat]] section. Avalable options can be found in the [StdConvert] section of the config file.
+  
+* Confirm that "user.hubitat.Hubitat" has been added to the list of restful_services in the [[Services]] section of the config file.
 
 * Restart the WeeWX server.
 

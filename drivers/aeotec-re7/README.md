@@ -6,8 +6,8 @@
 This driver supports the Range Extender 7 manufactured by Aeotec.
 
 
-### Indicator does not always work as expected
-As of this writing (firmware version 1.1), there is an unexpected behavior with the RE7.
+#### Indicator not always work as expected...
+Note that in firmware version 1.1, there is an unexpected behavior with the RE7.
 Following network inclusion, the indicator remains illuminated as expected. Double clicking
 the "action button" enables and disables the indicator as documented. However as soon as the
 illuminator status is queried (INDICATOR_GET) by the Refresh command, the device disables
@@ -17,4 +17,4 @@ command.  Even once the indicators been enabled by the Configure command, if the
 is subsequently disabled and re-enabled via the action button, the indicator will again be
 completely disabled as soon as a Refresh command is executed.
 
-**I have received confirmation from Aeotec that this issue is addressed in firmware 1.2 in September.**
+**This issue is addressed in firmware 1.2, released September 2020.**

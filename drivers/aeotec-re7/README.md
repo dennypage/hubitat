@@ -6,7 +6,7 @@
 This driver supports the Range Extender 7 manufactured by Aeotec.
 
 
-#### Indicator not always work as expected...
+#### Indicator not always working as expected...
 Note that in firmware version 1.1, there is an unexpected behavior with the RE7.
 Following network inclusion, the indicator remains illuminated as expected. Double clicking
 the "action button" enables and disables the indicator as documented. However as soon as the

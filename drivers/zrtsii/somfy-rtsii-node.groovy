@@ -120,6 +120,9 @@ preferences
         description: "(needed for some rts motor types)",
         type: "enum", defaultValue: "1", options: [[1:"1 [default]"], [2:"2"], [3:"3"], [4:"4"], [5:"5"]]
 
+    
+    input name: "reverseDirection", title: "Reverse direction/status: When enabled, Open is Down and Closed is Up", type: "bool", defaultValue: false
+    
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
 }
@@ -129,6 +132,46 @@ def installed()
     state.moveBegin = 0
     state.oldPosition = 0
     state.newPosition = 100
+}
+
+def updated()
+{
+    Boolean isReversed = state.isReversed ?: false
+    Boolean reverseDirection = settings?.reverseDirection ?: false
+    
+    
+    // Reverse status and position if the reverseDirection option changes
+    if ( isReversed != reverseDirection )
+    {
+        
+        BigDecimal currentPosition = device.currentValue("position")
+        String currentWindowShadeStatus = device.currentValue("windowShade") 
+        String currentSwitchStatus = device.currentValue("on") 
+        
+        newPosition = 100 - currentPosition
+
+        
+        newStatus = currentWindowShadeStatus
+        if ( newStatus in ['open', 'closed'] ) {
+            newStatus = (newStatus == "open" ? "closed" : "open")
+        }
+
+        newSwitchStatus = newPosition > 0 ? "on" : "off"
+        
+        
+        if ( newStatus != currentWindowShadeStatus ) {
+            sendEvent([name: 'windowShade', value: newStatus])
+        }
+        if ( newSwitchStatus != currentSwitchStatus ) {
+            sendEvent([name: 'switch', value: newSwitchStatus])
+        }
+        if ( newPosition != currentPosition ) {
+            sendEvent([name: 'position', value: newPosition])
+        }
+        
+        state.isReversed = reverseDirection   
+    }
+ 
 }
 
 def moveComplete(args)
@@ -208,24 +251,27 @@ def setPosition(BigDecimal newPosition)
     BigDecimal delta
     if (newPosition > oldPosition)
     {
-        upDown = true
+        upDown = settings?.reverseDirection ? false : true
         newPosition = Math.min(newPosition.toInteger(), (Integer) 100)
         delta = newPosition - oldPosition
         sendStop = newPosition < 99 ? true : false
     }
     else
     {
-        upDown = false
+        upDown = settings?.reverseDirection ? true : false
         newPosition = Math.max(newPosition.toInteger(), (Integer) 0)
         delta = oldPosition - newPosition
         sendStop = newPosition > 0 ? true : false
     }
+    
+    log.debug "upDown: $upDown"
+    
     Long millis = travelTime.toBigDecimal() * 10.0 * delta
     
     if (logEnable) log.debug "moving position from ${oldPosition} to ${newPosition} (${millis}ms)"
     
     def map = [:]
-    status = upDown ? "opening" : "closing"
+    status = settings?.reverseDirection ? (upDown ? "closing" : "opening") : (upDown ? "opening" : "closing")
     map.name = "windowShade"
     map.value = status
     if (txtEnable) map.descriptionText = "${device.displayName} is ${status}"

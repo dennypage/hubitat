@@ -53,6 +53,7 @@
 // Version 1.0.0    Initial release
 // Version 1.1.0    Unhandled events logged as warnings
 // Version 1.1.1    Fix issue with null current position
+// Version 1.2.0    Add option to support a reversed motor
 //
 
 metadata
@@ -119,6 +120,8 @@ preferences
     input name: "cmdCount", title: "Send commands this many times",
         description: "(needed for some rts motor types)",
         type: "enum", defaultValue: "1", options: [[1:"1 [default]"], [2:"2"], [3:"3"], [4:"4"], [5:"5"]]
+
+    input name: "reverseMotor", title: "Reverse motor direction", type: "bool", defaultValue: false
 
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
@@ -231,6 +234,11 @@ def setPosition(BigDecimal newPosition)
     if (txtEnable) map.descriptionText = "${device.displayName} is ${status}"
     sendEvent(map)
 
+    if (reverseMotor)
+    {
+        upDown = !upDown
+    }
+
     def hubAction = new hubitat.device.HubAction(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStartLevelChange(upDown: upDown).format(), hubitat.device.Protocol.ZWAVE)
     Integer limit = cmdCount.toInteger()
     pauseExecution(1) // Yield
@@ -281,4 +289,3 @@ def zwaveEvent(hubitat.zwave.Command cmd)
     log.warn "Unhandled cmd: ${cmd.toString()}"
     return null
 }
-

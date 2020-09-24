@@ -30,6 +30,7 @@
 //                  Unhandled events logged as warnings.
 // Version 1.2.0    Add support for setting the wakeup interval.
 // Version 1.3.0    Move to Wakeup interval in minutes and improve validity checks.
+// Version 1.4.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 //
 
 metadata
@@ -138,73 +139,73 @@ def deviceSync()
     def cmds = []
     if (resync)
     {
-        cmds.add(secureCmd(zwave.versionV2.versionGet()))
+        cmds.add(zwaveSecureEncap(zwave.versionV2.versionGet()))
     }
 
     value = temperatureDifferential ? temperatureDifferential.toInteger() : 1
     if (resync || state.temperatureDifferential != value)
     {
         log.warn "Updating device temperatureDifferential: ${value}"
-        cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 21, size: 1)))
-        cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 21)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 21, size: 1)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 21)))
     }
 
     value = humidityDifferential ? humidityDifferential.toInteger() : 5
     if (resync || state.humidityDifferential != value)
     {
         log.warn "Updating device humidityDifferential: ${value}"
-        cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 23, size: 1)))
-        cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 23)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 23, size: 1)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 23)))
     }
 
     value = tickInterval ? tickInterval.toInteger() : 30
     if (resync || state.tickInterval != value)
     {
         log.warn "Updating device tickInterval: ${value}"
-        cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 20, size: 1)))
-        cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 20)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 20, size: 1)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 20)))
     }
 
     value = batteryInterval ? batteryInterval.toInteger() : 12
     if (resync || state.batteryInterval != value)
     {
         log.warn "Updating device batteryInterval: ${value}"
-        cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 10, size: 1)))
-        cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 10)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 10, size: 1)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 10)))
     }
 
     value = temperatureInterval ? temperatureInterval.toInteger() : 12
     if (resync || state.temperatureInterval != value)
     {
         log.warn "Updating device temperatureInterval: ${value}"
-        cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 13, size: 1)))
-        cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 13)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 13, size: 1)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 13)))
     }
 
     value = humidityInterval ? humidityInterval.toInteger() : 12
     if (resync || state.humidityInterval != value)
     {
         log.warn "Updating device humidityInterval: ${value}"
-        cmds.add(secureCmd(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 14, size: 1)))
-        cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 14)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 14, size: 1)))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 14)))
     }
 
     value = wakeUpInterval ? wakeUpInterval.toInteger() : 1440
     if (resync || state.wakeUpInterval != value)
     {
         log.warn "Updating device wakeUpInterval: ${value}"
-        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value * 60, nodeid: zwaveHubNodeId)))
-        cmds.add(secureCmd(zwave.wakeUpV2.wakeUpIntervalGet()))
+        cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value * 60, nodeid: zwaveHubNodeId)))
+        cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpIntervalGet()))
     }
 
     if (refresh)
     {
-        cmds.add(secureCmd(zwave.batteryV1.batteryGet()))
-        cmds.add(secureCmd(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)))
-        cmds.add(secureCmd(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)))
+        cmds.add(zwaveSecureEncap(zwave.batteryV1.batteryGet()))
+        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)))
+        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)))
     }
 
-    cmds.add(secureCmd(zwave.wakeUpV2.wakeUpNoMoreInformation()))
+    cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpNoMoreInformation()))
     delayBetween(cmds, 250)
 }
 
@@ -495,16 +496,4 @@ def zwaveEvent(hubitat.zwave.Command cmd)
 {
     log.warn "Unhandled cmd: ${cmd.toString()}"
     return null
-}
-
-private secureCmd(cmd)
-{
-    if (getDataValue("zwaveSecurePairingComplete") == "true")
-    {
-        return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
-    }
-    else
-    {
-        return cmd.format()
-    }
 }

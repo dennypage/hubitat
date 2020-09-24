@@ -4,6 +4,12 @@
   "payPalUrl": "https://paypal.me/dennythemartian?locale.x=en_US",
   "packages": [
     {
+      "name": "Aeotec Range Extender 7",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/aeotec-re7.json",
+      "description": "Driver for the Aeotec Range Extender 7"
+    },
+    {
       "name": "Philio PAT02-B Temperature / Humidity sensor",
       "category": "Integrations",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/pat02.json",

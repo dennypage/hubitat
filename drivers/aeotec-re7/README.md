@@ -1,6 +1,3 @@
-### Please note: This driver does not currently support S2. In order to use this driver on the C-7, the Aeotec must not be securely enrolled.
-
-
 ### Aeotec Range Extender 7
 
 This driver supports the Range Extender 7 manufactured by Aeotec.

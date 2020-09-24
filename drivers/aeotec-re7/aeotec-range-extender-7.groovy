@@ -33,6 +33,7 @@
 // Version 1.2.0    Power level set is a temporary setting for testing and
 //                  requires a timeout value.
 // Version 1.2.1    Clarify that node for range test needs to be decimal
+// Version 1.3.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 //
 
 metadata
@@ -110,10 +111,10 @@ def refresh()
     if (logEnable) log.debug "Refresh"
 
     def cmds = []
-    cmds.add(secureCmd(zwave.indicatorV3.indicatorGet()))
-    cmds.add(secureCmd(zwave.versionV3.versionGet()))
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelGet()))
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet()))
+    cmds.add(zwaveSecureEncap(zwave.indicatorV3.indicatorGet()))
+    cmds.add(zwaveSecureEncap(zwave.versionV3.versionGet()))
+    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet()))
+    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet()))
     delayBetween(cmds, 200)
 }
 
@@ -124,8 +125,8 @@ def configure()
     Integer indicatorValue = indicator ? 0xFF : 0
 
     def cmds = []
-    cmds.add(secureCmd(zwave.indicatorV3.indicatorSet(value: indicatorValue)))
-    cmds.add(secureCmd(zwave.indicatorV3.indicatorGet()))
+    cmds.add(zwaveSecureEncap(zwave.indicatorV3.indicatorSet(value: indicatorValue)))
+    cmds.add(zwaveSecureEncap(zwave.indicatorV3.indicatorGet()))
     delayBetween(cmds, 200)
 }
 
@@ -162,8 +163,8 @@ def powerTest(Number seconds, String powerString)
     def power = stringToPowerLevel(powerString)
 
     def cmds = []
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelSet(powerLevel: power, timeout: seconds)))
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelGet()))
+    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelSet(powerLevel: power, timeout: seconds)))
+    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet()))
     delayBetween(cmds, 200)
 }
 
@@ -186,21 +187,21 @@ def rangeTest(Number node, String powerString)
     log.info "Range test pending with node ${node}: sending ${frames} frames at power level ${powerString}"
 
     def cmds = []
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
+    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
                                                                 testFrameCount: frames,
                                                                 testNodeid: node)))
-    cmds.add(secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet()))
+    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet()))
     delayBetween(cmds, 100)
 }
 
 def requestPowerLevel()
 {
-    secureCmd(zwave.powerlevelV1.powerlevelGet())
+    zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet())
 }
 
 def requestTestNode()
 {
-    secureCmd(zwave.powerlevelV1.powerlevelTestNodeGet())
+    zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet())
 }
 
 def parse(String description)
@@ -319,16 +320,4 @@ def zwaveEvent(hubitat.zwave.Command cmd)
 {
     if (logEnable) log.debug "Unhandled cmd: ${cmd.toString()}"
     return null
-}
-
-private secureCmd(cmd)
-{
-    if (getDataValue("zwaveSecurePairingComplete") == "true")
-    {
-        return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
-    }
-    else
-    {
-        return cmd.format()
-    }
 }

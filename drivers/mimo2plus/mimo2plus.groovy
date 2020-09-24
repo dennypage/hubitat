@@ -128,7 +128,7 @@ def relayOneOn()
 {
     log.debug "Relay one on"
     def cmds = []
-    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0xff), 3)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.basicV1.basicSet(value: 0xff), 3)))
     delayBetween(cmds, 200)
 }
 
@@ -136,7 +136,7 @@ def relayOneOff()
 {
     log.debug "Relay one off"
     def cmds = []
-    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0x00), 3)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.basicV1.basicSet(value: 0x00), 3)))
     delayBetween(cmds, 200)
 }
 
@@ -144,7 +144,7 @@ def relayTwoOn()
 {
     log.debug "Relay two on"
     def cmds = []
-    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0xff), 4)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.basicV1.basicSet(value: 0xff), 4)))
     delayBetween(cmds, 200)
 }
 
@@ -152,7 +152,7 @@ def relayTwoOff()
 {
     log.debug "Relay two off"
     def cmds = []
-    cmds.add(secureCmd(endpointCmd(zwave.basicV1.basicSet(value: 0x00), 4)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.basicV1.basicSet(value: 0x00), 4)))
     delayBetween(cmds, 200)
 }
 
@@ -168,29 +168,29 @@ def refresh()
     if (logEnable) log.debug "Refresh"
 
     def cmds = []
-    cmds.add(secureCmd(zwave.versionV3.versionGet()))
+    cmds.add(zwaveSecureEncap(zwave.versionV3.versionGet()))
 
     // Relay configs
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 1)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 2)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 1)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 2)))
     // Signal 1 configs
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 3)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 4)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 5)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 6)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 7)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 3)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 4)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 5)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 6)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 7)))
     // Signal 2 configs
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 9)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 10)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 11)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 13)))
-    cmds.add(secureCmd(zwave.configurationV1.configurationGet(parameterNumber: 14)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 9)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 10)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 11)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 13)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 14)))
     // Signal status
-    cmds.add(secureCmd(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 1)))
-    cmds.add(secureCmd(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 2)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 1)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.sensorMultilevelV9.sensorMultilevelGet(sensorType: 1), 2)))
     // Relay status
-    cmds.add(secureCmd(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 3)))
-    cmds.add(secureCmd(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 4)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 3)))
+    cmds.add(zwaveSecureEncap(endpointCmd(zwave.switchBinaryV1.switchBinaryGet(), 4)))
     delayBetween(cmds, 200)
 }
 
@@ -310,16 +310,4 @@ def zwaveEvent(hubitat.zwave.Command cmd)
 private endpointCmd(cmd, endpoint)
 {
     zwave.multiChannelV3.multiChannelCmdEncap(bitAddress: false, sourceEndPoint:0, destinationEndPoint: endpoint).encapsulate(cmd)
-}
-
-private secureCmd(cmd)
-{
-    if (getDataValue("zwaveSecurePairingComplete") == "true")
-    {
-        return zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
-    }
-    else
-    {
-        return cmd.format()
-    }
 }

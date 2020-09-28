@@ -11,7 +11,7 @@
       "id": "44185675-6a6b-4b5a-9a58-8fb8d9019560",
       "name": "Aeotec Range Extender 7",
       "namespace": "cococafe",
-      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/aeotec-re7/aeotec-range-extender-7.groovy"
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/aeotec-re7/aeotec-range-extender-7.groovy",
       "version": "1.3.0",
       "required": true
     }

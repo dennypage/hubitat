@@ -69,7 +69,7 @@ def configPage()
             section("")
             {
                 paragraph "<b>Click Done to complete the installation.</b>"
-            }            
+            }
         }
     }
 
@@ -89,4 +89,3 @@ def updated()
     unsubscribe()
     installed()
 }
-

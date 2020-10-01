@@ -49,7 +49,7 @@ def configPage()
     {
         // Ensure label is correct in case the device has changed label
         checkLabel()
-        
+
         section("") {
             paragraph "Choose the notification device, contact sensor (door/window/etc.) and the number of minutes before reminders are sent"
         }
@@ -69,7 +69,7 @@ def configPage()
         }
     }
 }
-    
+
 def checkLabel()
 {
     if (configContact)
@@ -94,7 +94,7 @@ def installed()
         if (configContact.currentState("contact").value == "open")
         {
             runIn(configMinutes.toInteger() * 60, contactReminder)
-        }        
+        }
     }
 }
 
@@ -125,4 +125,3 @@ def contactEvent(e)
         unschedule()
     }
 }
-

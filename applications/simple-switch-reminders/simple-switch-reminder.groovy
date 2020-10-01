@@ -49,7 +49,7 @@ def configPage()
     {
         // Ensure label is correct in case the device has changed label
         checkLabel()
-        
+
         section("") {
             paragraph "Choose the notification device, switch and the number of minutes before reminders are sent"
         }
@@ -69,7 +69,7 @@ def configPage()
         }
     }
 }
-    
+
 def checkLabel()
 {
     if (configSwitch)
@@ -94,7 +94,7 @@ def installed()
         if (configSwitch.currentState("switch").value == "on")
         {
             runIn(configMinutes.toInteger() * 60, switchReminder)
-        }        
+        }
     }
 }
 
@@ -125,4 +125,3 @@ def switchEvent(e)
         unschedule()
     }
 }
-

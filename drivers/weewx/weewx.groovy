@@ -49,7 +49,7 @@ metadata
         attribute "heatindex", "number"
         attribute "humidex", "number"
         attribute "windchill", "number"
-        
+
         attribute "rain", "number"
         attribute "rainRate", "number"
         attribute "hourRain", "number"
@@ -71,13 +71,13 @@ preferences
     input name: "weewxIpAddress", title: "IPv4 address of WeeWX server", type: "string"
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
 }
-  
+
 def configure()
 {
     state.hubURL = "http://${device.hub.getDataValue("localIP")}:${device.hub.getDataValue("localSrvPortTCP")}"
     log.info "Hub URL is ${state.hubURL}"
 }
-  
+
 void logsOff()
 {
     device.updateSetting("logEnable", [value:"false", type:"bool"])
@@ -94,7 +94,7 @@ void updated()
 {
     if (logEnable) log.debug "Updated preferences"
     log.warn "debug logging is ${logEnable}"
-        
+
     boolean validIPv4 = weewxIpAddress.matches("(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)")
     if (! validIPv4)
     {
@@ -106,7 +106,7 @@ void updated()
     log.info "WeeWX Device Network ID is ${weewxNetID}"
     device.setDeviceNetworkId("${weewxNetID}")
 
-    configure()    
+    configure()
 }
 
 void parse(String description)
@@ -125,4 +125,3 @@ void parse(String description)
         }
     }
 }
-

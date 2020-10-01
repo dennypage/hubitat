@@ -49,7 +49,7 @@ def configPage()
     {
         // Ensure label is correct in case the device has changed label
         checkLabel()
-        
+
         section("") {
             paragraph "Choose the switch and the number of minutes before the switch is automatically turned off"
         }
@@ -62,7 +62,7 @@ def configPage()
         }
     }
 }
-    
+
 def checkLabel()
 {
     if (configSwitch)
@@ -114,4 +114,3 @@ def switchEvent(e)
         unschedule()
     }
 }
-

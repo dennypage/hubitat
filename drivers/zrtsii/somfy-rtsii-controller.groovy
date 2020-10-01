@@ -74,4 +74,3 @@ def zwaveEvent(hubitat.zwave.Command cmd)
     log.warn "Unhandled cmd: ${cmd.toString()}"
     return null
 }
-

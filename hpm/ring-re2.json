@@ -1,0 +1,19 @@
+{
+  "packageName": "Ring Alarm Range Extender Gen2",
+  "minimumHEVersion": "2.2.3",
+  "author": "Denny Page",
+  "version": "1.0",
+  "dateReleased": "2020-10-02",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/ring-re2",
+  "communityLink": "https://community.hubitat.com/t/release-ring-alarm-range-extender-gen2-driver/52151",
+  "drivers": [
+    {
+      "id": "857e383a-a21c-4edc-ba0a-a07d1a94c02d",
+      "name": "Ring Alarm Range Extender Gen2",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/ring-re2/ring-range-extender-gen2.groovy",
+      "version": "1.0.0",
+      "required": true
+    }
+  ]
+}

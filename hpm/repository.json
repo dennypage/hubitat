@@ -16,6 +16,12 @@
       "description": "Driver for the PAT02-B Temperature / Humidity sensor made by Philio (also Zipato, Safe Grow, etc.)"
     },
     {
+      "name": "Ring Alarm Range Extender gen2",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/ring-re2.json",
+      "description": "Driver for the Ring Alarm Range Extender gen2"
+    },
+    {
       "name": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
       "category": "Integrations",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/zrtsii.json",

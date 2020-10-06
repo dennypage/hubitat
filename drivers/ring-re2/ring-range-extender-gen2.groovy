@@ -26,6 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Version 1.0.0    Initial release
+// Version 1.1.0    Clean up log messages. Handle button push.
 //
 
 metadata
@@ -298,15 +299,17 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     if (cmd.batteryLevel == 0xFF)
     {
         map.value = 0
-        map.descriptionText = "${device.displayName} battery is critically low"
+        map.descriptionText = "${device.displayName} Battery is critically low"
+        sendEvent(map)
+        log.warn map.descriptionText
     }
     else
     {
         map.value = cmd.batteryLevel
-        map.descriptionText = "${device.displayName} battery is ${map.value}${map.unit}"
+        map.descriptionText = "${device.displayName} Battery is ${map.value}${map.unit}"
+        sendEvent(map)
+        if (txtEnable) log.info map.descriptionText
     }
-    sendEvent(map)
-    if (txtEnable) log.info map.descriptionText
 }
 
 def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
@@ -320,24 +323,24 @@ def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
         switch (cmd.event)
         {
             case 1:
-                log.warn "${device.displayName} power on"
+                log.info "${device.displayName} Power on"
                 break
             case 2:
                 map.name = "powerSource"
                 map.value = "battery"
-                map.descriptionText = "${device.displayName} on battery"
+                map.descriptionText = "${device.displayName} On battery"
                 sendEvent(map)
                 log.warn map.descriptionText
                 break
             case 3:
                 map.name = "powerSource"
                 map.value = "mains"
-                map.descriptionText = "${device.displayName} on mains"
+                map.descriptionText = "${device.displayName} On mains"
                 sendEvent(map)
                 log.info map.descriptionText
                 break
             case 5:
-                log.warn "${device.displayName} voltage drop/drift"
+                log.warn "${device.displayName} Voltage drop/drift"
                 break
              default:
                 if (cmd.event) log.warn "Unhandled power notifcation event: ${cmd.event}"
@@ -375,8 +378,12 @@ def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
                     desc = "Unknown (${value})"
             }
 
-            log.warn "System Notification: ${desc}"
+            log.warn "${device.displayName} ${desc}"
         }
+    }
+    else if (cmd.notificationType == 9 && cmd.event == 5)
+    {
+        log.info "${device.displayName} Heartbeat (button)"
     }
     else
     {

@@ -54,6 +54,8 @@
 // Version 1.1.0    Unhandled events logged as warnings
 // Version 1.1.1    Fix issue with null current position
 // Version 1.2.0    Add option to support a reversed motor
+// Version 1.3.0    Remove unused and confusing Switch capability.
+//                  Simplify sendEvent use.
 //
 
 metadata
@@ -62,9 +64,7 @@ metadata
         name: "Somfy ZRTSII Node", namespace: "cococafe", author: "Denny Page"
     )
     {
-        capability "Switch"
         capability "WindowShade"
-
         command "stop"
 
         fingerprint mfr: "0047", prod: "5A52", deviceId: "5401",
@@ -158,30 +158,28 @@ def moveComplete(args)
     if (state.newPosition > state.oldPosition)
     {
         newPosition = Math.min(state.oldPosition.toInteger() + delta, (Integer) 100)
-        status = newPosition < 99 ? "partially open" : "open"
     }
     else
     {
         newPosition = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
-        status = newPosition > 0 ? "partially open" : "closed"
     }
     
-    log.info "${device.displayName} is ${status} (${newPosition})"
+    if (newPosition == 0)
+    {
+        status = "closed"
+    }
+    else if (newPosition == 100)
+    {
+        status = "open"
+    }
+    else
+    {
+        status = "partially open"
+    }
+    sendEvent(name: "windowShade", value: status)
+    sendEvent(name: "position", value: newPosition)
 
-    def map = [:]
-    map.name = "switch"
-    map.value = newPosition > 0 ? "on" : "off"
-    sendEvent(map)
-    
-    map.name = "windowShade"
-    map.value = status
-    if (txtEnable) map.descriptionText = "${device.displayName} is ${status}"
-    sendEvent(map)
-
-    map.name = "position"
-    map.value = newPosition
-    if (txtEnable) map.descriptionText = "${device.displayName} position ${newPosition}"
-    sendEvent(map)
+    if (txtEnable) log.info "${device.displayName} is ${status} (${newPosition})"
 }
 
 def stop()
@@ -227,12 +225,9 @@ def setPosition(BigDecimal newPosition)
     
     if (logEnable) log.debug "moving position from ${oldPosition} to ${newPosition} (${millis}ms)"
     
-    def map = [:]
     status = upDown ? "opening" : "closing"
-    map.name = "windowShade"
-    map.value = status
-    if (txtEnable) map.descriptionText = "${device.displayName} is ${status}"
-    sendEvent(map)
+    sendEvent(name: "windowShade", value: status)
+    if (txtEnable) log.info "${device.displayName} is ${status}"
 
     if (reverseMotor)
     {
@@ -259,16 +254,6 @@ def open()
 def close()
 {
     setPosition(0)
-}
-
-def on()
-{
-    open()
-}
-
-def off()
-{
-    close()
 }
 
 // Effectively unused...

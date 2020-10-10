@@ -28,3 +28,5 @@ Note that there are two components to the controller:
 * The [Child Driver](multi-relay-door-shade-controller-driver.groovy) which is installed in Drivers Code
 
 Be sure to install both!
+
+Once installed, create a controller using *+Add User App* in the Apps panel.

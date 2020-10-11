@@ -1,0 +1,30 @@
+{
+  "packageName": "Multi-Relay Door/Shade Controller",
+  "minimumHEVersion": "2.2.3",
+  "author": "Denny Page",
+  "version": "1.0",
+  "dateReleased": "2020-10-10",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/multi-relay-door-shade-controller",
+  "communityLink": "https://community.hubitat.com/t/release-multi-relay-door-shade-controller/52793",
+  "apps": [
+    {
+      "id": "1dc04158-67d7-42c9-be4a-0c25fb0c4a2a",
+      "name": "Multi-Relay Door/Shade Controller",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/multi-relay-door-shade-controller/multi-relay-door-shade-controller-app.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    },
+  "drivers": [
+    {
+      "id": "9807b5ed-f491-449c-b371-5e56aadfc45f",
+      "name": "Multi-Relay Door/Shade Controller",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/multi-relay-door-shade-controller/multi-relay-door-shade-controller-driver.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    }
+  ]
+}

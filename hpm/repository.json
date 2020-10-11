@@ -10,6 +10,12 @@
       "description": "Driver for the Aeotec Range Extender 7"
     },
     {
+      "name": "Multi-Relay Door/Shade Controller",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/multi-relay-door-shade-controller.json",
+      "description": "Application and driver for a Multi-Relay Door/Shade Controller"
+    },
+    {
       "name": "Philio PAT02-B Temperature / Humidity sensor",
       "category": "Integrations",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/pat02.json",

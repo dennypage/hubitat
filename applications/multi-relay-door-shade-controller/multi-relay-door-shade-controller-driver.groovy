@@ -28,6 +28,10 @@
 // Virtual Multi-relay Door / Shade Controller (Child driver)
 //
 // Version 1.0.0    Initial release
+// Version 1.1.0    When asked to fully open or close, fire the
+//                  relay even if we think we are already there.
+//                  This helps reduce confusion if the device has
+//                  been operated with a different controller.
 //
 
 metadata
@@ -78,7 +82,7 @@ def moveComplete(args)
     // fully open or fully closed. This helps address the natural errors
     // that occur when using time based estimates of position.
     if (args.sendStop) getParent().stop()
-    
+
     BigDecimal elapsed = now() - state.moveBegin
     state.moveBegin = 0
 
@@ -91,7 +95,7 @@ def moveComplete(args)
     {
         newPosition = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
     }
-    
+
     sendEvent(name: "door", value: newPosition > 0 ? "open" : "closed")
     if (newPosition == 0)
     {
@@ -127,9 +131,20 @@ def setPosition(BigDecimal newPosition)
         // If we don't have a stop relay, it's either fully open or fully closed
         if (newPosition > 0) newPosition = 100
     }
-    
+
     BigDecimal oldPosition = device.currentValue("position") ?: 0
-    if (newPosition == oldPosition) return
+    if (newPosition == oldPosition)
+    {
+        // There is  the possibility that the door or shade has
+        // has been changed without our knowledge. For example if
+        // we think the door is closed but someone opened the door
+        // using a wall switch. So to help reduce confusion, even
+        // if we think we are already fully closed or fully open
+        // we fire the appropriate relay anyway.
+        if (newPosition == 0 || newPosition >= 100) getParent().move(newPosition)
+
+        return
+    }
 
     Boolean moveOpen
     Boolean sendStop
@@ -149,9 +164,9 @@ def setPosition(BigDecimal newPosition)
         sendStop = newPosition > 0 ? true : false
     }
     Long millis = getDataValue("travelTime").toBigDecimal() * 10.0 * delta
-    
+
     if (logEnable) log.debug "moving position from ${oldPosition} to ${newPosition} (${millis}ms)"
-    
+
     status = moveOpen ? "opening" : "closing"
     sendEvent(name: "door", value: status)
     sendEvent(name: "windowShade", value: status)

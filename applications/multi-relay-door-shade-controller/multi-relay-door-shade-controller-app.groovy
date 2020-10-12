@@ -76,8 +76,8 @@ def updated()
     newLabel = "Multi-Relay Door/Shade Controller - ${deviceName}"
     app.updateLabel(newLabel)
 
-	def child = getChildDevice("mrdsc-${app.id}")
-	if (child == null) child = addChildDevice("cococafe", "Multi-Relay Door/Shade Controller", "mrdsc-${app.id}", null)
+    def child = getChildDevice("mrdsc-${app.id}")
+    if (child == null) child = addChildDevice("cococafe", "Multi-Relay Door/Shade Controller", "mrdsc-${app.id}", null)
 
     child.setLabel(deviceName)
     child.updateDataValue("travelTime", travelTime.toString())
@@ -114,7 +114,7 @@ def move(openClose)
             stopRelay.off()
         }
     }
-    
+
     if (openClose)
     {
         // Safety check
@@ -138,7 +138,7 @@ def move(openClose)
         closeRelay.on()
     }
 }
-    
+
 def stop()
 {
     if (stopRelay)

@@ -21,13 +21,13 @@ The Hubitat device driver receives messages from WeeWX. Installation of the Hubi
 
 * Take note of the hubURL state variable. You will need this for configuring the WeeWX extension below.
 
-#### WeeWX user extention
+#### WeeWX user extension
 
 The WeeWX extension can be found [here](https://github.com/dennypage/weewx-hubitat). Installation of the WeeWX extension is also pretty simple:
 
 * Download the extenstion as a [zip file](https://github.com/dennypage/weewx-hubitat/archive/master.zip). If your system doesn't support zip files, you can use a [tar.gz file](https://github.com/dennypage/weewx-hubitat/archive/master.tar.gz) instead.
 
-* Run the WeeWX extenstion installer with the downloaded file: wee_extension --install=master.zip
+* Run the WeeWX extension installer with the downloaded file: wee_extension --install=master.zip
 
 * Edit the [[Hubitat]] section of the weewx.conf file:
 

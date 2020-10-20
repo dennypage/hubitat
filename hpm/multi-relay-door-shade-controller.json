@@ -15,7 +15,8 @@
       "version": "1.0.0",
       "required": true,
       "oauth": false
-    },
+    }
+  ],
   "drivers": [
     {
       "id": "9807b5ed-f491-449c-b371-5e56aadfc45f",

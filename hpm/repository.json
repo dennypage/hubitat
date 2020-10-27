@@ -50,6 +50,12 @@
       "category": "Convenience",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-switch-off-timers.json",
       "description": "A simple switch timeout system for turning off switches that have been left on"
+    },
+    {
+      "name": "WeeWX (weather station) to Hubitat driver",
+      "category": "Integrations",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/weewx.json",
+      "description": "Driver to provide a direct (local) connection between WeeWX and Hubitat"
     }
   ]
 }

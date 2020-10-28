@@ -6,54 +6,63 @@
     {
       "name": "Aeotec Range Extender 7",
       "category": "Integrations",
+      "tags": ["Repeaters & Extenders"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/aeotec-re7.json",
       "description": "Driver for the Aeotec Range Extender 7"
     },
     {
       "name": "Multi-Relay Door/Shade Controller",
       "category": "Integrations",
+      "tags": ["Doors & Windows", "Window Coverings"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/multi-relay-door-shade-controller.json",
       "description": "Application and driver for a Multi-Relay Door/Shade Controller"
     },
     {
       "name": "Philio PAT02-B Temperature / Humidity sensor",
       "category": "Integrations",
+      "tags": ["Temperature & Humidity"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/pat02.json",
       "description": "Driver for the PAT02-B Temperature / Humidity sensor made by Philio (also Zipato, Safe Grow, etc.)"
     },
     {
       "name": "Ring Alarm Range Extender gen2",
       "category": "Integrations",
+      "tags": ["Repeaters & Extenders"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/ring-re2.json",
       "description": "Driver for the Ring Alarm Range Extender gen2"
     },
     {
       "name": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
       "category": "Integrations",
+      "tags": ["Window Coverings"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/zrtsii.json",
       "description": "Drivers for the Somfy Z-Wave to RTS Interface II (ZRTSII)"
     },
     {
       "name": "Simple Contact Reminders",
       "category": "Convenience",
+      "tags": ["Notifications", "Doors & Windows"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-contact-reminders.json",
       "description": "A simple reminder notification system for contact sensors (doors/windows/etc.) that have been left open"
     },
     {
       "name": "Simple Switch Reminders",
       "category": "Convenience",
+      "tags": ["Notifications", "Lights & Switches"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-switch-reminders.json",
       "description": "A simple reminder notification system for switches that have been left on"
     },
     {
       "name": "Simple Switch Off Timers",
       "category": "Convenience",
+      "tags": ["Timers", "Lights & Switches"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-switch-off-timers.json",
       "description": "A simple switch timeout system for turning off switches that have been left on"
     },
     {
       "name": "WeeWX (weather station) to Hubitat driver",
       "category": "Integrations",
+      "tags": ["Weather", "LAN"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/weewx.json",
       "description": "Driver to provide a direct (local) connection between WeeWX and Hubitat"
     }

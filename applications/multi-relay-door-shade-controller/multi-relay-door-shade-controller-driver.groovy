@@ -136,8 +136,8 @@ def setPosition(BigDecimal newPosition)
     if (newPosition == oldPosition)
     {
         // There is  the possibility that the door or shade has
-        // has been changed without our knowledge. For example if
-        // we think the door is closed but someone opened the door
+        // been changed without our knowledge. For example if we
+        // think the door is closed but someone opened the door
         // using a wall switch. So to help reduce confusion, even
         // if we think we are already fully closed or fully open
         // we fire the appropriate relay anyway.

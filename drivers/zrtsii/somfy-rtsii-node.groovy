@@ -39,7 +39,7 @@
 //
 // Since there is no position feedback available, we must attempt
 // to guess position based upon the amount of time since a command
-// was sent. There are a number of things that can affect this, 
+// was sent. There are a number of things that can affect this,
 // how busy the hub is, how busy the ZRTSII is, how reliable the RTS
 // motor reception is, etc. In other words, don't expect positioning
 // to be highly accurate. 10% is a good result. Best results will
@@ -56,6 +56,8 @@
 // Version 1.2.0    Add option to support a reversed motor
 // Version 1.3.0    Remove unused and confusing Switch capability.
 //                  Simplify sendEvent use.
+// Version 2.0.0    Support Somfy's My Postion.
+//                  Add refresh capability (node ping)
 //
 
 metadata
@@ -65,6 +67,7 @@ metadata
     )
     {
         capability "WindowShade"
+        capability "Refresh"
         command "stop"
 
         fingerprint mfr: "0047", prod: "5A52", deviceId: "5401",
@@ -117,6 +120,10 @@ preferences
         description: "(position accuracy depends on this)",
         type: "number", defaultValue: "30", range: "1..127"
 
+    input name: "myPosition", title: "Somfy My Position",
+        description: "(leave blank if My Position not set)",
+        type: "number", ange: "0..100"
+
     input name: "cmdCount", title: "Send commands this many times",
         description: "(needed for some rts motor types)",
         type: "enum", defaultValue: "1", options: [[1:"1 [default]"], [2:"2"], [3:"3"], [4:"4"], [5:"5"]]
@@ -134,6 +141,14 @@ def installed()
     state.newPosition = 100
 }
 
+def refresh()
+{
+    // Essentially just a node ping
+    def cmds = []
+    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
+    delayBetween(cmds, 200)
+}
+
 def moveComplete(args)
 {
     if (logEnable) log.debug "moveComplete(${args})"
@@ -143,14 +158,8 @@ def moveComplete(args)
     // Note that we do not send a stop command if we are moving to either
     // fully open or fully closed. This helps address the natural errors
     // that occur when using time based estimates of position.
-    if (args.sendStop)
-    {
-        def hubAction = new hubitat.device.HubAction(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStopLevelChange().format(), hubitat.device.Protocol.ZWAVE)
-        Integer limit = cmdCount.toInteger()
-        pauseExecution(1) // Yield
-        for (Integer i = 0; i < limit; i++) sendHubCommand(hubAction)
-    }
-    
+    if (args.sendStop) sendStopCommand()
+
     BigDecimal elapsed = now() - state.moveBegin
     state.moveBegin = 0
 
@@ -163,7 +172,7 @@ def moveComplete(args)
     {
         newPosition = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
     }
-    
+
     if (newPosition == 0)
     {
         status = "closed"
@@ -186,63 +195,102 @@ def stop()
 {
     if (logEnable) log.debug "stop()"
 
-    unschedule(moveComplete)
-    moveComplete([sendStop: true])
-}
-
-def setPosition(BigDecimal newPosition)
-{
-    if (logEnable) log.debug "setPosition(${newPosition})"
     if (state.moveBegin)
     {
-        if (newPosition == state.newPosition) return
-        // Stop and allow state update
-        stop()
-        pauseExecution(100)
+        unschedule(moveComplete)
+        moveComplete([sendStop: true])
+        return
     }
-    
-    BigDecimal oldPosition = device.currentValue("position") ?: 0
-    if (newPosition == oldPosition) return
-
-    Boolean upDown
-    Boolean sendStop
-    BigDecimal delta
-    if (newPosition > oldPosition)
+    else if (myPosition)
     {
-        upDown = true
-        newPosition = Math.min(newPosition.toInteger(), (Integer) 100)
-        delta = newPosition - oldPosition
-        sendStop = newPosition < 99 ? true : false
+        setPosition(myPosition)
     }
     else
     {
-        upDown = false
-        newPosition = Math.max(newPosition.toInteger(), (Integer) 0)
+        sendStopCommand()
+    }
+}
+
+def setPosition(BigDecimal position)
+{
+    Integer newPosition = position.toInteger()
+    Boolean sendStop = false
+    BigDecimal delta
+
+    if (logEnable) log.debug "setPosition(${newPosition})"
+
+    if (newPosition > 100)
+    {
+        newPosition = 100
+    }
+    else if (newPosition < 0)
+    {
+        newPosition = 0
+    }
+
+    if (state.moveBegin)
+    {
+        if (newPosition == state.newPosition) return
+
+        // Stop and allow state update
+        stop()
+        pauseExecution(250)
+    }
+
+    Integer oldPosition = device.currentValue("position") ?: 0
+    if (newPosition == oldPosition)
+    {
+        // There is  the possibility that the shade has been changed
+        // has been changed without our knowledge. For example if
+        // we think the shade is closed but someone opened the shade
+        // using a hand controller. So to help reduce confusion, even
+        // if we think we are already fully open, closed, or at
+        // myPosition, we send a command anyway.
+        if (newPosition == 0)
+        {
+            sendStartCommand(false)
+        }
+        else if (newPosition >= 100)
+        {
+            sendStartCommand(true)
+        }
+        else if (myPosition && newPosition == myPosition)
+        {
+            sendStopCommand()
+        }
+        return
+    }
+
+    if (newPosition > oldPosition)
+    {
+        delta = newPosition - oldPosition
+    }
+    else
+    {
         delta = oldPosition - newPosition
-        sendStop = newPosition > 0 ? true : false
     }
     Long millis = travelTime.toBigDecimal() * 10.0 * delta
-    
+
     if (logEnable) log.debug "moving position from ${oldPosition} to ${newPosition} (${millis}ms)"
-    
-    status = upDown ? "opening" : "closing"
+
+    status = newPosition > oldPosition ? "opening" : "closing"
     sendEvent(name: "windowShade", value: status)
     if (txtEnable) log.info "${device.displayName} is ${status}"
 
-    if (reverseMotor)
-    {
-        upDown = !upDown
-    }
-
-    def hubAction = new hubitat.device.HubAction(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStartLevelChange(upDown: upDown).format(), hubitat.device.Protocol.ZWAVE)
-    Integer limit = cmdCount.toInteger()
-    pauseExecution(1) // Yield
-    for (Integer i = 0; i < limit; i++) sendHubCommand(hubAction)
-
-    state.moveBegin = now()
     state.oldPosition = oldPosition
     state.newPosition = newPosition
 
+    if (myPosition && newPosition == myPosition)
+    {
+        sendStopCommand()
+    }
+    else
+    {
+        Boolean upDown = newPosition > oldPosition ? true : false
+        if (newPosition > 0 && newPosition < 100) sendStop = true
+        sendStartCommand(upDown)
+    }
+    state.moveBegin = now()
     runInMillis(millis.toLong(), moveComplete, [data: [sendStop: sendStop]])
 }
 
@@ -256,7 +304,6 @@ def close()
     setPosition(0)
 }
 
-// Effectively unused...
 def parse(String description)
 {
     hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
@@ -269,8 +316,34 @@ def parse(String description)
     return null
 }
 
+def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
+{
+    log.info "Manufacturer specifc report: ${cmd.toString()}"
+    return null
+}
+
 def zwaveEvent(hubitat.zwave.Command cmd)
 {
     log.warn "Unhandled cmd: ${cmd.toString()}"
     return null
+}
+
+private void sendCommand(hubitat.zwave.Command cmd)
+{
+    def hubAction = new hubitat.device.HubAction(cmd.format(), hubitat.device.Protocol.ZWAVE)
+
+    Integer limit = cmdCount.toInteger()
+    pauseExecution(1) // Yield
+    for (Integer i = 0; i < limit; i++) sendHubCommand(hubAction)
+}
+
+private void sendStartCommand(Boolean upDown)
+{
+    if (reverseMotor) upDown = !upDown
+    sendCommand(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStartLevelChange(upDown: upDown))
+}
+
+private void sendStopCommand()
+{
+    sendCommand(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStopLevelChange())
 }

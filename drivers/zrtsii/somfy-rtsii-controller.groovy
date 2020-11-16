@@ -36,6 +36,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Unhandled events logged as warnings
+// Version 2.0.0    Add a refresh capability (node ping)
 //
 
 metadata
@@ -44,6 +45,8 @@ metadata
         name: "Somfy ZRTSII Controller", namespace: "cococafe", author: "Denny Page"
     )
     {
+        capability "Refresh"
+
         fingerprint mfr: "0047", prod: "5A52", deviceId: "5400", inClusters: "0x86,0x72"
 
         // All command classes are version 1
@@ -56,7 +59,14 @@ preferences
 {
 }
 
-// Effectively unused...
+def refresh()
+{
+    // Essentially just a node ping
+    def cmds = []
+    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
+    delayBetween(cmds, 200)
+}
+
 def parse(String description)
 {
     hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
@@ -66,6 +76,12 @@ def parse(String description)
     }
 
     log.warn "Non Z-Wave parse event: ${description}"
+    return null
+}
+
+def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
+{
+    log.info "Manufacturer specifc report: ${cmd.toString()}"
     return null
 }
 

@@ -34,6 +34,7 @@
 //                  requires a timeout value.
 // Version 1.2.1    Clarify that node for range test needs to be decimal
 // Version 1.3.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
+// Version 1.3.1    Mark seconds as a required input for power test
 //
 
 metadata
@@ -50,7 +51,7 @@ metadata
         attribute "rangeTest", "string"
         attribute "rangeTestReceived", "string"
 
-        command "powerTest", [[name: "seconds", type: "NUMBER", defaultValue: "0",
+        command "powerTest", [[name: "seconds*", type: "NUMBER", defaultValue: "0",
                                description: "Seconds before returning to normal power"],
                               [name: "power", type: "ENUM", constraints: ["normal",
                                                           "-1dBm", "-2dBm", "-3dBm",

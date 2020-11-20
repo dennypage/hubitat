@@ -27,6 +27,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Clean up log messages. Handle button push.
+// Version 1.1.1    Mark seconds as a required input for power test.
 //
 
 metadata
@@ -44,7 +45,7 @@ metadata
         attribute "rangeTest", "string"
         attribute "rangeTestReceived", "string"
 
-        command "powerTest", [[name: "seconds", type: "NUMBER", defaultValue: "0",
+        command "powerTest", [[name: "seconds*", type: "NUMBER", defaultValue: "0",
                                description: "Seconds before returning to normal power"],
                               [name: "power", type: "ENUM", constraints: ["normal",
                                                           "-1dBm", "-2dBm", "-3dBm",

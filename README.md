@@ -9,6 +9,7 @@
 
 
 ### Applications
+* [Idle Node Refesher](applications/idle-node-refresher)
 * [Multi-Relay Door/Shade Controller](applications/multi-relay-door-shade-controller)
 * [Simple Contact Reminders](applications/simple-contact-reminders)
 * [Simple Switch Reminders](applications/simple-switch-reminders)

@@ -5,7 +5,7 @@
   "version": "1.0",
   "dateReleased": "2020-11-23",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/idle-node-refresher",
-  "communityLink": "",
+  "communityLink": "https://community.hubitat.com/t/release-idle-node-refresher/56613",
   "apps": [
     {
       "id": "e2228a75-fd22-473c-92aa-25e043290fe4",

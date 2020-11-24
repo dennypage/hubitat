@@ -6,9 +6,16 @@
     {
       "name": "Aeotec Range Extender 7",
       "category": "Integrations",
-      "tags": ["Repeaters & Extenders"],
+      "tags": ["Repeaters & Extenders", "ZWave"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/aeotec-re7.json",
       "description": "Driver for the Aeotec Range Extender 7"
+    },
+    {
+      "name": "Idle Node Refresher",
+      "category": "Utility",
+      "tags": ["Tools & Utilities", "ZWave"],
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/idle-node-refresher.json",
+      "description": "Application to refresh nodes that have not been used for an extended period of time"
     },
     {
       "name": "Multi-Relay Door/Shade Controller",
@@ -20,21 +27,21 @@
     {
       "name": "Philio PAT02-B Temperature / Humidity sensor",
       "category": "Integrations",
-      "tags": ["Temperature & Humidity"],
+      "tags": ["Temperature & Humidity", "ZWave"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/pat02.json",
       "description": "Driver for the PAT02-B Temperature / Humidity sensor made by Philio (also Zipato, Safe Grow, etc.)"
     },
     {
       "name": "Ring Alarm Range Extender gen2",
       "category": "Integrations",
-      "tags": ["Repeaters & Extenders"],
+      "tags": ["Repeaters & Extenders", "ZWave"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/ring-re2.json",
       "description": "Driver for the Ring Alarm Range Extender gen2"
     },
     {
       "name": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
       "category": "Integrations",
-      "tags": ["Window Coverings"],
+      "tags": ["Window Coverings", "ZWave"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/zrtsii.json",
       "description": "Drivers for the Somfy Z-Wave to RTS Interface II (ZRTSII)"
     },

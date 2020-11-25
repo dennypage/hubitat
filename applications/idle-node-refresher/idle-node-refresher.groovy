@@ -28,6 +28,8 @@
 // Idle Node Refresher (Child application)
 //
 // Version 1.0.0    Initial release
+// Version 1.0.1    Bug fix - incorrect use of idle interval instead of
+//                  refresh interval for min sleep. 
 //
 
 definition(
@@ -210,6 +212,6 @@ def refreshNode()
 
     // Schedule our next refresh
     millis = state.lastCache[state.sortedIndex[0]] + idleMillis - now
-    if (millis < idleMillis) millis = idleMillis
+    if (millis < refreshMillis) millis = refreshMillis
     runInMillis(millis, refreshNode)
 }

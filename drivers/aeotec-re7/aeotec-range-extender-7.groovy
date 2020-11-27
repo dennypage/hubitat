@@ -35,6 +35,7 @@
 // Version 1.2.1    Clarify that node for range test needs to be decimal
 // Version 1.3.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 // Version 1.3.1    Mark seconds as a required input for power test
+// Version 1.4.0    Normalize logging
 //
 
 metadata
@@ -183,9 +184,9 @@ def rangeTest(Number node, String powerString)
     def map = [:]
     map.name = "rangeTest"
     map.value = "pending"
-    if (txtEnable) map.descriptionText = "sending ${frames} frames to node ${node} at power level ${powerString}"
+    map.descriptionText = "${device.displayName}: range test pending - sending ${frames} frames to node ${node} at power level ${powerString}"
     sendEvent(map)
-    log.info "Range test pending with node ${node}: sending ${frames} frames at power level ${powerString}"
+    if (txtEnable) log.info "${map.descriptionText}"
 
     def cmds = []
     cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
@@ -222,13 +223,13 @@ void zwaveEvent(hubitat.zwave.commands.indicatorv3.IndicatorReport cmd)
     if (logEnable) log.debug "IndicatorReport: ${cmd.toString()}"
 
     String status = cmd.value ? "on" : "off"
-    log.info "indicator ${status}"
 
     def map = [:]
     map.name = "indicator"
     map.value = "${status}"
-    if (txtEnable) map.descriptionText = "indicator light is ${status}"
+    map.descriptionText = "${device.displayName}: indicator light is ${status}"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 }
 
 def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
@@ -238,13 +239,12 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
     if (logEnable) log.debug "PowerLevelReport: ${cmd.toString()}"
 
     power = powerLevelToString(cmd.powerLevel)
-    log.info "Power level ${power}, timeout ${cmd.timeout}"
-
     def map = [:]
     map.name = "powerLevel"
     map.value = "${power}"
-    if (txtEnable) map.descriptionText = "transmit power level"
+    map.descriptionText = "${device.displayName}: transmit power level is ${power}, timeout ${cmd.timeout} seconds"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 
     if (cmd.timeout)
     {
@@ -279,21 +279,23 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
             status = "in progress"
             break
     }
-    log.info "Range test ${status} with node ${cmd.testNodeid}: ${cmd.testFrameCount} frames received"
 
     def map = [:]
     map.name = "rangeTest"
     map.value = "${status}"
+    map.descriptionText = "${device.displayName}: range test ${status}"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 
     map.name = "rangeTestReceived"
     map.value = "${cmd.testFrameCount}"
-    if (txtEnable && !inProgress) map.descriptionText = "received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
+    map.descriptionText = "${device.displayName}: received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 
     if (inProgress)
     {
-        runIn(1, requestTestNode)
+        runIn(2, requestTestNode)
     }
 }
 

@@ -32,6 +32,7 @@
 //                  relay even if we think we are already there.
 //                  This helps reduce confusion if the device has
 //                  been operated with a different controller.
+// Version 1.1.1    Normalize logging
 //
 
 metadata
@@ -111,8 +112,7 @@ def moveComplete(args)
     }
     sendEvent(name: "windowShade", value: status)
     sendEvent(name: "position", value: newPosition)
-
-    if (txtEnable) log.info "${device.displayName} is ${status} (${newPosition})"
+    if (txtEnable) log.info "${device.displayName}: ${status} (${newPosition})"
 }
 
 def setPosition(BigDecimal newPosition)
@@ -170,7 +170,7 @@ def setPosition(BigDecimal newPosition)
     status = moveOpen ? "opening" : "closing"
     sendEvent(name: "door", value: status)
     sendEvent(name: "windowShade", value: status)
-    if (txtEnable) log.info "${device.displayName} is ${status}"
+    if (txtEnable) log.info "${device.displayName}: ${status}"
 
     getParent().move(moveOpen)
     state.moveBegin = now()

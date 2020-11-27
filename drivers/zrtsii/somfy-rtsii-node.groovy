@@ -58,6 +58,8 @@
 //                  Simplify sendEvent use.
 // Version 2.0.0    Support Somfy's My Postion.
 //                  Add refresh capability (node ping)
+// Version 2.0.1    Use SwitchMultilevelReport for node ping.
+//                  Send events on refresh.
 //
 
 metadata
@@ -144,9 +146,7 @@ def installed()
 def refresh()
 {
     // Essentially just a node ping
-    def cmds = []
-    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
-    delayBetween(cmds, 200)
+    zwave.switchMultilevelV1.switchMultilevelGet().format()
 }
 
 def moveComplete(args)
@@ -316,9 +316,11 @@ def parse(String description)
     return null
 }
 
-def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
+def zwaveEvent(hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelReport cmd)
 {
-    log.info "Manufacturer specifc report: ${cmd.toString()}"
+    if (logEnable) log.debug "Switch multilevel report: ${cmd.toString()}"
+    sendEvent(name: "windowShade", value: device.currentValue("windowShade") ?: "unknown")
+    sendEvent(name: "position", value: device.currentValue("position") ?: 0)
     return null
 }
 

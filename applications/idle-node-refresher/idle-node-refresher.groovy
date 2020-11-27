@@ -29,7 +29,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.0.1    Bug fix - incorrect use of idle interval instead of
-//                  refresh interval for min sleep. 
+//                  refresh interval for min sleep.
 //
 
 definition(

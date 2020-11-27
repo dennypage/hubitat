@@ -31,6 +31,7 @@
 // Version 1.2.0    Add support for setting the wakeup interval.
 // Version 1.3.0    Move to Wakeup interval in minutes and improve validity checks.
 // Version 1.4.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
+// Version 1.5.0    Normalize logging
 //
 
 metadata
@@ -330,10 +331,9 @@ def clearTamper() {
     def map = [:]
     map.name = "tamper"
     map.value = "clear"
-    if (txtEnable) map.descriptionText = "${device.displayName} tamper cleared"
-
-    log.info "${device.displayName} tamper cleared"
+    map.descriptionText = "${device.displayName}: tamper cleared"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 }
 
 def parse(String description)
@@ -369,9 +369,7 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
                 map.value = (map.value.toBigDecimal() + temperatureOffset.toBigDecimal()).toString()
                 if (logEnable) log.debug "${device.displayName} adjusted temperature by ${temperatureOffset} to ${map.value}°${map.unit}"
             }
-            if (txtEnable) map.descriptionText = "${device.displayName} temperature is ${map.value}°${map.unit}"
-
-            log.info "${device.displayName} temperature is ${map.value}°${map.unit}"
+            map.descriptionText = "${device.displayName}: temperature is ${map.value}°${map.unit}"
             break
 
         case 5: // humidity
@@ -387,9 +385,7 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
                 map.value = (map.value.toBigDecimal() + humidityOffset.toBigDecimal()).toString()
                 if (logEnable) log.debug "${device.displayName} adjusted humidity by ${humidityOffset} to ${map.value}${map.unit}"
             }
-            if (txtEnable) map.descriptionText = "${device.displayName} humidity is ${map.value}${map.unit}"
-
-            log.info "${device.displayName} humidity is ${map.value}${map.unit}"
+            map.descriptionText = "${device.displayName}: humidity is ${map.value}${map.unit}"
             break
 
         default:
@@ -398,7 +394,8 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
             break
     }
 
-    createEvent(map)
+    sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 }
 
 def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
@@ -408,10 +405,9 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     map.name = "battery"
     map.value = cmd.batteryLevel
     map.unit = "%"
-    if (txtEnable) map.descriptionText = "${device.displayName} battery is ${map.value}${map.unit}"
-
-    log.info "${device.displayName} battery is ${map.value}${map.unit}"
-    createEvent(map)
+    map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
+    sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 }
 
 def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
@@ -421,10 +417,9 @@ def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
         def map = [:]
         map.name = "tamper"
         map.value = "detected"
-        if (txtEnable) map.descriptionText = "${device.displayName} tamper detected"
-
-        log.info "${device.displayName} tamper detected"
-        createEvent(map)
+        map.descriptionText = "${device.displayName}: tamper detected"
+        sendEvent(map)
+        if (txtEnable) log.info "${map.descriptionText}"
     }
     else
     {

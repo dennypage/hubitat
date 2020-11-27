@@ -28,6 +28,7 @@
 // Version 1.0.0    Initial release
 // Version 1.1.0    Clean up log messages. Handle button push.
 // Version 1.1.1    Mark seconds as a required input for power test.
+// Version 1.2.0    Normalize logging
 //
 
 metadata
@@ -189,9 +190,9 @@ def rangeTest(Number node, String powerString)
 
     map.name = "rangeTest"
     map.value = "pending"
-    map.descriptionText = "Range test pending with node ${node}: sending ${frames} frames at power level ${powerString}"
+    map.descriptionText = "${device.displayName}: range test pending - sending ${frames} frames to node ${node} at power level ${powerString}"
     sendEvent(map)
-    if (txtEnable) log.info map.descriptionText
+    if (txtEnable) log.info "${map.descriptionText}"
 
     def cmds = []
     cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
@@ -232,13 +233,12 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
     if (logEnable) log.debug "PowerLevelReport: ${cmd.toString()}"
 
     power = powerLevelToString(cmd.powerLevel)
-    log.info "Power level ${power}, timeout ${cmd.timeout}"
-
     def map = [:]
     map.name = "powerLevel"
     map.value = "${power}"
-    map.descriptionText = "transmit power level"
+    map.descriptionText = "${device.displayName}: transmit power level is ${power}, timeout ${cmd.timeout} seconds"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 
     if (cmd.timeout)
     {
@@ -273,17 +273,19 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
             status = "in progress"
             break
     }
-    log.info "Range test ${status} with node ${cmd.testNodeid}: ${cmd.testFrameCount} frames received"
 
     def map = [:]
     map.name = "rangeTest"
     map.value = "${status}"
+    map.descriptionText = "${device.displayName}: range test ${status}"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 
     map.name = "rangeTestReceived"
     map.value = "${cmd.testFrameCount}"
-    if (!inProgress) map.descriptionText = "received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
+    map.descriptionText = "${device.displayName}: received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
     sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
 
     if (inProgress)
     {
@@ -300,14 +302,14 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     if (cmd.batteryLevel == 0xFF)
     {
         map.value = 0
-        map.descriptionText = "${device.displayName} Battery is critically low"
+        map.descriptionText = "${device.displayName}: battery is critically low"
         sendEvent(map)
         log.warn map.descriptionText
     }
     else
     {
         map.value = cmd.batteryLevel
-        map.descriptionText = "${device.displayName} Battery is ${map.value}${map.unit}"
+        map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
         sendEvent(map)
         if (txtEnable) log.info map.descriptionText
     }
@@ -324,27 +326,27 @@ def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
         switch (cmd.event)
         {
             case 1:
-                log.info "${device.displayName} Power on"
+                log.info "${device.displayName}: power on"
                 break
             case 2:
                 map.name = "powerSource"
                 map.value = "battery"
-                map.descriptionText = "${device.displayName} On battery"
+                map.descriptionText = "${device.displayName}: on battery"
                 sendEvent(map)
                 log.warn map.descriptionText
                 break
             case 3:
                 map.name = "powerSource"
                 map.value = "mains"
-                map.descriptionText = "${device.displayName} On mains"
+                map.descriptionText = "${device.displayName}: on mains"
                 sendEvent(map)
                 log.info map.descriptionText
                 break
             case 5:
-                log.warn "${device.displayName} Voltage drop/drift"
+                log.warn "${device.displayName}: voltage drop/drift"
                 break
              default:
-                if (cmd.event) log.warn "Unhandled power notifcation event: ${cmd.event}"
+                if (cmd.event) log.warn "${device.displayName}: unhandled power notifcation event: ${cmd.event}"
                 return null
         }
 
@@ -358,33 +360,33 @@ def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
             switch (value)
             {
                 case 0x55:
-                    desc = "Watchdog"
+                    desc = "watchdog"
                     break
                 case 0xA9:
-                    desc = "Software Fault (SDK)"
+                    desc = "software Fault (SDK)"
                     break
                 case 0xAA:
-                    desc = "Software Fault (Ring)"
+                    desc = "software Fault (Ring)"
                     break
                 case 0xAB:
-                    desc = "Pin Reset"
+                    desc = "pin Reset"
                     break
                 case 0xAC:
-                    desc = "Software Reset"
+                    desc = "software Reset"
                     break
                 case 0xAD:
-                    desc = "Dropped Frame"
+                    desc = "dropped Frame"
                     break
                 default:
-                    desc = "Unknown (${value})"
+                    desc = "unknown (${value})"
             }
 
-            log.warn "${device.displayName} ${desc}"
+            log.warn "${device.displayName}: ${desc}"
         }
     }
     else if (cmd.notificationType == 9 && cmd.event == 5)
     {
-        log.info "${device.displayName} Heartbeat (button)"
+        log.info "${device.displayName}: heartbeat (button)"
     }
     else
     {

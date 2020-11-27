@@ -304,14 +304,14 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
         map.value = 0
         map.descriptionText = "${device.displayName}: battery is critically low"
         sendEvent(map)
-        log.warn map.descriptionText
+        log.warn "${map.descriptionText}"
     }
     else
     {
         map.value = cmd.batteryLevel
         map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
         sendEvent(map)
-        if (txtEnable) log.info map.descriptionText
+        if (txtEnable) log.info "${map.descriptionText}"
     }
 }
 
@@ -333,14 +333,14 @@ def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
                 map.value = "battery"
                 map.descriptionText = "${device.displayName}: on battery"
                 sendEvent(map)
-                log.warn map.descriptionText
+                log.warn "${map.descriptionText}"
                 break
             case 3:
                 map.name = "powerSource"
                 map.value = "mains"
                 map.descriptionText = "${device.displayName}: on mains"
                 sendEvent(map)
-                log.info map.descriptionText
+            log.info "${map.descriptionText}"
                 break
             case 5:
                 log.warn "${device.displayName}: voltage drop/drift"

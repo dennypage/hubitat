@@ -28,6 +28,7 @@
 // Virtual Multi-relay Door / Shade Controller (Parent application)
 //
 // Version 1.0.0    Initial release
+// Version 1.0.1    Child device should be a component device
 //
 
 definition(
@@ -73,13 +74,13 @@ def updated()
 {
     log.info "Updated"
 
-    newLabel = "Multi-Relay Door/Shade Controller - ${deviceName}"
-    app.updateLabel(newLabel)
+    app.updateLabel("Multi-Relay Door/Shade Controller - ${deviceName}")
 
-    def child = getChildDevice("mrdsc-${app.id}")
-    if (child == null) child = addChildDevice("cococafe", "Multi-Relay Door/Shade Controller", "mrdsc-${app.id}", null)
-
+    String childId = "mrdsc-${app.id}"
+    def child = getChildDevice(childId)
+    if (child == null) child = addChildDevice("cococafe", "Multi-Relay Door/Shade Controller", childId, [isComponent: true])
     child.setLabel(deviceName)
+
     child.updateDataValue("travelTime", travelTime.toString())
     child.updateDataValue("openRelay", openRelay.toString())
     child.updateDataValue("closeRelay", closeRelay.toString())

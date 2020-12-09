@@ -12,7 +12,7 @@
       "name": "Multi-Relay Door/Shade Controller",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/multi-relay-door-shade-controller/multi-relay-door-shade-controller-app.groovy",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "required": true,
       "oauth": false
     }

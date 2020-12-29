@@ -53,6 +53,13 @@
       "description": "A simple reminder notification system for contact sensors (doors/windows/etc.) that have been left open"
     },
     {
+      "name": "Simple Idle Alerts",
+      "category": "Convenience",
+      "tags": ["Notifications", "Monitoring"],
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/simple-idle-alerts.json",
+      "description": "A simple alert notification system for devices that have not been updated for a period of time"
+    },
+    {
       "name": "Simple Switch Reminders",
       "category": "Convenience",
       "tags": ["Notifications", "Lights & Switches"],

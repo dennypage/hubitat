@@ -29,6 +29,7 @@
 // Version 1.1.0    Clean up log messages. Handle button push.
 // Version 1.1.1    Mark seconds as a required input for power test.
 // Version 1.2.0    Normalize logging
+// Version 1.2.1    Minor capitalization fix
 //
 
 metadata
@@ -363,19 +364,19 @@ def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
                     desc = "watchdog"
                     break
                 case 0xA9:
-                    desc = "software Fault (SDK)"
+                    desc = "software fault (SDK)"
                     break
                 case 0xAA:
-                    desc = "software Fault (Ring)"
+                    desc = "software fault (Ring)"
                     break
                 case 0xAB:
-                    desc = "pin Reset"
+                    desc = "pin reset"
                     break
                 case 0xAC:
-                    desc = "software Reset"
+                    desc = "software reset"
                     break
                 case 0xAD:
-                    desc = "dropped Frame"
+                    desc = "dropped frame"
                     break
                 default:
                     desc = "unknown (${value})"

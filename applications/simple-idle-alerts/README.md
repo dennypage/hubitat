@@ -1,4 +1,4 @@
-### Simple Contact Reminders
+### Simple Idle Alerts
 
 This application provides a simple alert notification system for devices
 that have not been updated for a period of time.

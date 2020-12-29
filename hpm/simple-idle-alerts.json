@@ -1,0 +1,29 @@
+{
+  "packageName": "Simple Idle Alerts",
+  "minimumHEVersion": "2.2.1",
+  "author": "Denny Page",
+  "version": "1.0",
+  "dateReleased": "2020-12-29",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-idle-alerts",
+  "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
+  "apps": [
+    {
+      "id": "8666e523-15e8-4f4f-aaf4-4580b046ea03",
+      "name": "Simple Idle Alerts",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-idle-alerts/simple-idle-alerts.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    },
+    {
+      "id": "6aad3d9a-0e3c-4973-9883-7c9da2d6cb4d",
+      "name": "Simple Idle Alert",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-idle-alerts/simple-idle-alert.groovy",
+      "version": "1.0.0",
+      "required": true,
+      "oauth": false
+    }
+  ]
+}

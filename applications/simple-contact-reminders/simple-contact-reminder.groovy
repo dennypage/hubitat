@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2021, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,9 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Version 1.0.0    Initial release
+// Version 1.1.0    Add App Events
 //
 
 definition(
@@ -67,6 +70,10 @@ def configPage()
         {
             input "configMinutesSubsequent", "number", title: "Number of minutes between subsequent reminders (0 to disable)", required: true
         }
+        section("")
+        {
+            input name: "appEvents", title: "Enable app events", type: "bool", defaultValue: false
+        }
     }
 }
 
@@ -106,8 +113,11 @@ def updated() {
 
 def contactReminder()
 {
-    log.info "Contact Reminder: ${configContact} left open"
-    configNotification.deviceNotification("Contact Reminder: ${configContact} left open")
+    String desc = "Contact Reminder: ${configContact} left open"
+    log.info "${desc}"
+    if (appEvents) sendEvent(name: "SSA", value: "Open", descriptionText: "${desc}")
+    configNotification.deviceNotification("${desc}")
+
     if (configMinutesSubsequent)
     {
         runIn(configMinutesSubsequent.toInteger() * 60, contactReminder)

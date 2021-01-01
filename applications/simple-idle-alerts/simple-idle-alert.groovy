@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2021, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Version 1.0.0    Initial release
+// Version 1.1.0    Add App Events
 //
 
 definition(
@@ -68,6 +69,10 @@ def configPage()
         section("")
         {
             input "configMinutesSubsequent", "number", title: "Number of minutes between subsequent alerts (0 to disable)", required: true
+        }
+        section("")
+        {
+            input name: "appEvents", title: "Enable app events", type: "bool", defaultValue: false
         }
     }
 }
@@ -164,9 +169,10 @@ def sendAlert()
     }
 
     Long minutes = millis / 60000
-    String text = "Idle Alert: device ${configDevice} has been idle for ${minutes} minutes"
-    log.info "${text}"
-    configNotification.deviceNotification("${text}")
+    String desc = "Idle Alert: device ${configDevice} has been idle for ${minutes} minutes"
+    log.info "${desc}"
+    if (appEvents) sendEvent(name: "SSA", value: "Idle", descriptionText: "${desc}")
+    configNotification.deviceNotification("${desc}")
 
     if (configMinutesSubsequent)
     {

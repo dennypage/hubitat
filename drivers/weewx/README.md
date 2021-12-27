@@ -27,6 +27,8 @@ The WeeWX extension can be found [here](https://github.com/dennypage/weewx-hubit
 
 * Download the extenstion as a [zip file](https://github.com/dennypage/weewx-hubitat/archive/master.zip). If your system doesn't support zip files, you can use a [tar.gz file](https://github.com/dennypage/weewx-hubitat/archive/master.tar.gz) instead.
 
+* Do not unzip or untar the file.
+
 * Run the WeeWX extension installer with the downloaded file: wee_extension --install=master.zip
 
 * Edit the [[Hubitat]] section of the weewx.conf file:

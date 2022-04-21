@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2022, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,12 +25,12 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Version 1.0.0    Initial release
+// Version 1.0.0    Initial release.
 // Version 1.1.0    Clean up log messages. Handle button push.
 // Version 1.1.1    Mark seconds as a required input for power test.
-// Version 1.2.0    Normalize logging
-// Version 1.2.1    Minor capitalization fix
-//
+// Version 1.2.0    Normalize logging.
+// Version 1.2.1    Minor capitalization fix.
+// Version 1.3.0    Add Initialize capability to cover PowerSource changes while hub not running.
 
 metadata
 {
@@ -39,6 +39,7 @@ metadata
     )
     {
         capability "Configuration"
+        capability "Initialize"
         capability "Refresh"
         capability "Battery"
         capability "PowerSource"
@@ -119,6 +120,13 @@ def refresh()
     cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet()))
     cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 1)))
     delayBetween(cmds, 200)
+}
+
+def initialize()
+{
+    if (logEnable) log.debug "Initialize"
+
+    runIn(1, refresh)
 }
 
 def configure()

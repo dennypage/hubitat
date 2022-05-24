@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2022, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 // Version 1.3.0    Move to Wakeup interval in minutes and improve validity checks.
 // Version 1.4.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 // Version 1.5.0    Normalize logging
+// Version 1.5.1    Fix low battery alert
 //
 
 metadata
@@ -327,7 +328,8 @@ def refresh()
     log.warn "Data will refresh when device wakes up"
 }
 
-def clearTamper() {
+def clearTamper()
+{
     def map = [:]
     map.name = "tamper"
     map.value = "clear"
@@ -401,6 +403,13 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
 def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
 {
     def map = [:]
+
+    def batteryLevel = cmd.batteryLevel
+    if (batteryLevel == 0xFF)
+    {
+        log.warn "${device.displayName} low battery"
+        batteryLevel = 0
+    }
 
     map.name = "battery"
     map.value = cmd.batteryLevel
@@ -476,7 +485,8 @@ void zwaveEvent(hubitat.zwave.commands.versionv2.VersionReport cmd)
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
 }
 
-def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
+def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd)
+{
     encapCmd = cmd.encapsulatedCommand()
     if (encapCmd)
     {

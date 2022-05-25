@@ -33,6 +33,7 @@
 // Version 1.4.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 // Version 1.5.0    Normalize logging
 // Version 1.5.1    Fix low battery alert
+// Version 1.5.2    Low battery value cannot be 0
 //
 
 metadata
@@ -408,7 +409,7 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     if (batteryLevel == 0xFF)
     {
         log.warn "${device.displayName} low battery"
-        batteryLevel = 0
+        batteryLevel = 1
     }
 
     map.name = "battery"

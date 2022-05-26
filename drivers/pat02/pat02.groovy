@@ -36,6 +36,7 @@
 // Version 1.5.2    Low battery value cannot be 0
 // Version 1.5.3    Fix battery value again
 // Version 2.0.0    Support flood sensor (PAT02-A & PAT03-C)
+// Version 2.0.1    Poll flood sensor on refresh
 //
 
 metadata
@@ -223,6 +224,8 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.batteryV1.batteryGet()))
         cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)))
         cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)))
+        cmds.add(zwaveSecureEncap(zwave.notificationV4.notificationGet(notificationType: 5, v1AlarmType: 0, event: 0)))
+        cmds.add(zwaveSecureEncap(zwave.notificationV4.notificationGet(notificationType: 5, v1AlarmType: 0, event: 2)))
     }
 
     cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpNoMoreInformation()))

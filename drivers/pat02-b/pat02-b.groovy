@@ -34,6 +34,7 @@
 // Version 1.5.0    Normalize logging
 // Version 1.5.1    Fix low battery alert
 // Version 1.5.2    Low battery value cannot be 0
+// Version 1.5.3    Fix battery value again
 //
 
 metadata
@@ -413,7 +414,7 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     }
 
     map.name = "battery"
-    map.value = cmd.batteryLevel
+    map.value = batteryLevel
     map.unit = "%"
     map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
     sendEvent(map)

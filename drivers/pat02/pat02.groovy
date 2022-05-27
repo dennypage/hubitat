@@ -37,6 +37,8 @@
 // Version 1.5.3    Fix battery value again
 // Version 2.0.0    Support flood sensor (PAT02-A & PAT03-C)
 // Version 2.0.1    Poll flood sensor on refresh
+// Version 2.0.2    Support older firmware that may send SensorBinaryReport rather
+//                  than NotificationReport for flood sensor
 //
 
 metadata
@@ -86,6 +88,7 @@ preferences
     // Device values noted for reference, but not configurable by this driver
     // Temperature Scale: Parameter 5 bit 3 (0: Fahrenheit [default], 1: Celsius)
     // Notification Type: Parameter 7 bit 4 (0: Notification Report [default], 1: Sensor Binary Report)
+    //                                      (NB: Newer firmware no longer supports Sensor Binary Report)
     // Disable Multi CC: Parameter 7 bit 5 (0: Enable Mulit CC in Auto report [default], 1: Disable Multi CC)
 
     // Temperature differential report: Parameter 21, Range 0-127, default 1, units of degrees Fahrenheit
@@ -226,6 +229,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)))
         cmds.add(zwaveSecureEncap(zwave.notificationV4.notificationGet(notificationType: 5, v1AlarmType: 0, event: 0)))
         cmds.add(zwaveSecureEncap(zwave.notificationV4.notificationGet(notificationType: 5, v1AlarmType: 0, event: 2)))
+        cmds.add(zwaveSecureEncap(zwave.sensorBinaryV2.sensorBinaryGet(sensorType: 6)))
     }
 
     cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpNoMoreInformation()))
@@ -384,6 +388,8 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
 {
     def map = [:]
 
+    if (logEnable) log.debug "SensorMultilevelReport: ${cmd.toString()}"
+
     switch (cmd.sensorType)
     {
         case 1: // temperature
@@ -434,6 +440,8 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
 {
     def map = [:]
 
+    if (logEnable) log.debug "BatteryReport: ${cmd.toString()}"
+
     def batteryLevel = cmd.batteryLevel
     if (batteryLevel == 0xFF)
     {
@@ -453,6 +461,8 @@ def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
 {
     def map = [:]
 
+    if (logEnable) log.debug "NotificationReport: ${cmd.toString()}"
+
     switch (cmd.notificationType)
     {
         case 5: // water
@@ -469,6 +479,27 @@ def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
             break
     }
 
+    sendEvent(map)
+    if (txtEnable) log.info "${map.descriptionText}"
+}
+
+def zwaveEvent(hubitat.zwave.commands.sensorbinaryv2.SensorBinaryReport cmd)
+{
+    // NB: Older firmware versions may send SensorBinaryReport instead of NotificationReport
+
+    def map = [:]
+
+    if (logEnable) log.debug "SensorBinaryReport: ${cmd.toString()}"
+
+    if (cmd.sensorType != 6)
+    {
+        if (logEnable) log.debug "Unknown SensorBinaryReport: ${cmd.toString()}"
+        return null
+    }
+
+    map.name = "water"
+    map.value = cmd.sensorValue ? "wet" : "dry"
+    map.descriptionText = "${device.displayName}: sensor is ${map.value}"
     sendEvent(map)
     if (txtEnable) log.info "${map.descriptionText}"
 }

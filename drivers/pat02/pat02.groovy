@@ -40,6 +40,7 @@
 // Version 2.0.2    Support older firmware that may send SensorBinaryReport rather
 //                  than NotificationReport for flood sensor
 // Version 2.0.3    Older firmware may also send SensorBinaryReport for tamper
+// Version 2.0.4    Notify if parameter 7 is not factory default
 //
 
 metadata
@@ -157,6 +158,7 @@ def deviceSync()
     if (resync)
     {
         cmds.add(zwaveSecureEncap(zwave.versionV2.versionGet()))
+        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 7)))
     }
 
     value = temperatureDifferential ? temperatureDifferential.toInteger() : 1
@@ -522,6 +524,10 @@ def zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd)
 
     switch (cmd.parameterNumber)
     {
+        case 7:
+            def value = cmd.configurationValue[0]
+            if (value) log.warn "${device.displayName}: Parameter 7 set to ${value} (factory default is 0)"
+            break
         case 10: // Auto Report Battery interval
             state.batteryInterval = cmd.configurationValue[0]
             break

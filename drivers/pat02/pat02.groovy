@@ -39,6 +39,7 @@
 // Version 2.0.1    Poll flood sensor on refresh
 // Version 2.0.2    Support older firmware that may send SensorBinaryReport rather
 //                  than NotificationReport for flood sensor
+// Version 2.0.3    Older firmware may also send SensorBinaryReport for tamper
 //
 
 metadata
@@ -469,10 +470,12 @@ def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
             map.name = "water"
             map.value = cmd.event ? "wet" : "dry"
             map.descriptionText = "${device.displayName}: sensor is ${map.value}"
+            break
         case 7: // tamper
             map.name = "tamper"
             map.value = "detected"
             map.descriptionText = "${device.displayName}: tamper detected"
+            break
         default:
             if (logEnable) log.debug "Unknown NotificationReport: ${cmd.toString()}"
             return null
@@ -491,15 +494,24 @@ def zwaveEvent(hubitat.zwave.commands.sensorbinaryv2.SensorBinaryReport cmd)
 
     if (logEnable) log.debug "SensorBinaryReport: ${cmd.toString()}"
 
-    if (cmd.sensorType != 6)
+    switch (cmd.sensorType)
     {
-        if (logEnable) log.debug "Unknown SensorBinaryReport: ${cmd.toString()}"
-        return null
+        case 6: // water
+            map.name = "water"
+            map.value = cmd.sensorValue ? "wet" : "dry"
+            map.descriptionText = "${device.displayName}: sensor is ${map.value}"
+            break
+        case 8: // tamper
+            map.name = "tamper"
+            map.value = "detected"
+            map.descriptionText = "${device.displayName}: tamper detected"
+            break
+        default:
+            if (logEnable) log.debug "Unknown SensorBinaryReport: ${cmd.toString()}"
+            return null
+            break
     }
 
-    map.name = "water"
-    map.value = cmd.sensorValue ? "wet" : "dry"
-    map.descriptionText = "${device.displayName}: sensor is ${map.value}"
     sendEvent(map)
     if (txtEnable) log.info "${map.descriptionText}"
 }

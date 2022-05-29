@@ -1,18 +1,18 @@
 {
-  "packageName": "Philio PAT02-B Temperature / Humidity sensor",
+  "packageName": "Philio PAT02 Flood / Temperature / Humidity sensors",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
   "version": "1.0",
-  "dateReleased": "2020-11-27",
-  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02-b",
-  "communityLink": "https://community.hubitat.com/t/philio-pat02-b-temperature-humidity-driver/43039",
+  "dateReleased": "2022-05-29",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02",
+  "communityLink": "https://community.hubitat.com/t/release-philip-pat02-flood-temperature-humidity-driver/94644",
   "drivers": [
     {
-      "id": "8e338c90-d158-47c6-b5a9-2fa2bf56cdd5",
-      "name": "Philio PAT02-B",
+      "id": "e7a764b7-d8af-481d-9703-f2edb8917a30",
+      "name": "Philio PAT02",
       "namespace": "cococafe",
-      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/pat02-b/pat02-b.groovy",
-      "version": "1.5.3",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/pat02/pat02.groovy",
+      "version": "2.0.4",
       "required": true
     }
   ]

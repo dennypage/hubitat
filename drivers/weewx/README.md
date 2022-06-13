@@ -29,7 +29,7 @@ The WeeWX extension can be found [here](https://github.com/dennypage/weewx-hubit
 
 * Do not unzip or untar the file.
 
-* Run the WeeWX extension installer with the downloaded file: wee_extension --install=master.zip
+* Run the WeeWX extension installer (documentation [here](https://weewx.com/docs/utilities.htm#wee_extension_utility)) with the downloaded file: wee_extension --install=master.zip
 
 * Edit the [[Hubitat]] section of the weewx.conf file:
 

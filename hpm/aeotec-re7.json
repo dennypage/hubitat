@@ -2,7 +2,6 @@
   "packageName": "Aeotec Range Extender 7",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2020-11-27",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/aeotec-re7",
   "communityLink": "https://community.hubitat.com/t/release-aeotec-range-extender-7/45303",

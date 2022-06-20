@@ -2,7 +2,6 @@
   "packageName": "Ring Alarm Range Extender gen2",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2020-12-29",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/ring-re2",
   "communityLink": "https://community.hubitat.com/t/release-ring-alarm-range-extender-gen2-driver/52151",

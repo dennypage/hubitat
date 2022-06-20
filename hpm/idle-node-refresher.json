@@ -2,7 +2,6 @@
   "packageName": "Idle Node Refresher",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2020-11-25",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/idle-node-refresher",
   "communityLink": "https://community.hubitat.com/t/release-idle-node-refresher/56613",

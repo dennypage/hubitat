@@ -2,7 +2,6 @@
   "packageName": "Philio PAT02 Flood / Temperature / Humidity sensors",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2022-05-29",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02",
   "communityLink": "https://community.hubitat.com/t/release-philip-pat02-flood-temperature-humidity-driver/94644",

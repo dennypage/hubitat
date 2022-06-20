@@ -2,7 +2,6 @@
   "packageName": "Simple Idle Alerts",
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2020-12-29",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-idle-alerts",
   "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",

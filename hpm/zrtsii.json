@@ -2,7 +2,6 @@
   "packageName": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2020-11-27",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zrtsii",
   "communityLink": "https://community.hubitat.com/t/somfy-z-wave-to-rts-interface-ii-driver/43745",

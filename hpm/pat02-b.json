@@ -2,7 +2,6 @@
   "packageName": "Philio PAT02-B Temperature / Humidity sensor",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.0",
   "dateReleased": "2020-11-27",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02-b",
   "communityLink": "https://community.hubitat.com/t/philio-pat02-b-temperature-humidity-driver/43039",

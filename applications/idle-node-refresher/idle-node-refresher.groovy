@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2022, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,9 @@
 // Version 1.0.0    Initial release
 // Version 1.0.1    Bug fix - incorrect use of idle interval instead of
 //                  refresh interval for min sleep.
+// Version 1.1.0    Add initialization function to ensure worker schedule
+//                  isn't lost during reboot. Use seconds for calculations
+//                  rather than milliseconds. Avoid runInMillis.
 //
 
 definition(
@@ -117,10 +120,15 @@ def updated()
     installed()
 }
 
+def initialize()
+{
+    updated()
+}
+
 private Long lastNodeActivity(node)
 {
     // 2020-11-17 01:56:54+0000
-    return Date.parse("yyyy-MM-dd HH:mm:ssZ", "${nodes[node].getLastActivity()}").getTime()
+    return Date.parse("yyyy-MM-dd HH:mm:ssZ", "${nodes[node].getLastActivity()}").getTime() / 1000
 }
 
 def updateLastCache()
@@ -167,22 +175,23 @@ def switchRefresh(args)
 
 def refreshNode()
 {
-    Long idleMillis = idleHours * 3600000
-    Long refreshMillis = refreshMinutes * 60000
-    Long now = now()
+    Long now = now() / 1000
+    Long idleSeconds = idleHours * 3600
+    Long refreshSeconds = refreshMinutes * 60
+    Long seconds
 
     for (int i = 0; i < state.sortedIndex.size(); i++)
     {
         node = state.sortedIndex[i]
 
-        Long elapsed = now - state.lastCache[node]
-        if (elapsed >= idleMillis)
+        seconds = now - state.lastCache[node]
+        if (seconds >= idleSeconds)
         {
             // Update our cached value
             state.lastCache[node] = lastNodeActivity(node)
-            elapsed = now - state.lastCache[node]
+            seconds = (now - state.lastCache[node])
 
-            if (elapsed >= idleMillis)
+            if (seconds >= idleSeconds)
             {
                 // Put the node at the end of the line
                 // NB: Even if refresh() does not update lastActivity, we won't refresh
@@ -191,7 +200,7 @@ def refreshNode()
 
                 try
                 {
-                    Integer hours = elapsed / 1000 / 60 / 60
+                    Integer hours = seconds / 3600
                     log.info "Node ${nodes[node].getDisplayName()}: last activity was ${hours} hours ago. Refreshing..."
                     nodes[node].refresh()
                 }
@@ -201,7 +210,11 @@ def refreshNode()
                 }
 
                 // Refresh switch state if requested
-                if (refreshSwitch && nodes[node].hasCapability("Switch")) runIn(60, switchRefresh, [data: [node: node]])
+                if (refreshSwitch && nodes[node].hasCapability("Switch"))
+                {
+                    runIn(60, switchRefresh, [data: [node: node]])
+                }
+
                 break
             }
         }
@@ -211,7 +224,7 @@ def refreshNode()
     updateSortedIndex()
 
     // Schedule our next refresh
-    millis = state.lastCache[state.sortedIndex[0]] + idleMillis - now
-    if (millis < refreshMillis) millis = refreshMillis
-    runInMillis(millis, refreshNode)
+    seconds = idleSeconds - (now - state.lastCache[state.sortedIndex[0]])
+    if (seconds < refreshSeconds) seconds = refreshSeconds
+    runIn(seconds, refreshNode)
 }

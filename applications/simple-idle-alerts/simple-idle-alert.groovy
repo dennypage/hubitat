@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2021, Denny Page
+// Copyright (c) 2020-2022, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,9 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Add App Events
+// Version 1.2.0    Add initialization function to ensure worker schedule
+//                  isn't lost during reboot. Use seconds for calculations
+//                  rather than milliseconds. Avoid runInMillis.
 //
 
 definition(
@@ -53,13 +56,16 @@ def configPage()
         // Ensure label is correct in case the device has changed label
         checkLabel()
 
-        section("") {
+        section("")
+        {
             paragraph "Choose the notification device, device and the number of minutes before alerts are sent"
         }
-        section("") {
+        section("")
+        {
             input "configNotification", "capability.notification", title: "Send alerts to these devices", multiple: true, required: true
         }
-        section("") {
+        section("")
+        {
             input "configDevice", "capability.*", title: "Send alerts for this device", multiple: false, required: true
         }
         section("")
@@ -101,74 +107,73 @@ def installed()
     }
 }
 
-def updated() {
+def updated()
+{
     unschedule()
     installed()
+}
+
+def initialize()
+{
+    updated()
 }
 
 private Long lastActivity(device)
 {
     // 2020-11-17 01:56:54+0000
-    return Date.parse("yyyy-MM-dd HH:mm:ssZ", "${device.getLastActivity()}").getTime()
+    return Date.parse("yyyy-MM-dd HH:mm:ssZ", "${device.getLastActivity()}").getTime() / 1000
 }
 
-private Long millisToIdle()
+private Long idleSeconds()
 {
-    Long now = now()
-    Long idle = lastActivity(configDevice) + configMinutes * 60000
+    Long now = now() / 1000
 
-    if (idle > now) return idle - now
-    return 0
-}
-
-private Long idleMillis(device)
-{
-    return now() - Date.parse("yyyy-MM-dd HH:mm:ssZ", "${configDevice.getLastActivity()}").getTime()
+    return now - lastActivity(configDevice)
 }
 
 def checkIdle()
 {
-    Long configMillis = configMinutes * 60000
-    Long millis = idleMillis()
+    Long configSeconds = configMinutes * 60
+    Long seconds = idleSeconds()
 
-    if (millis < configMillis)
+    if (seconds < configSeconds)
     {
-        runInMillis(configMillis - millis, checkIdle)
+        runIn(configSeconds - seconds, checkIdle)
         return
     }
 
-    runInMillis(configMillis, checkActive)
+    runIn(configSeconds, checkActive)
     sendAlert()
 }
 
 def checkActive()
 {
-    Long configMillis = configMinutes * 60000
-    Long millis = idleMillis()
+    Long configSeconds = configMinutes * 60
+    Long seconds = idleSeconds()
 
-    if (millis < configMillis)
+    if (seconds < configSeconds)
     {
         unschedule()
-        runInMillis(configMillis - millis, checkIdle)
+        runIn(configSeconds - seconds, checkIdle)
         return
     }
 
-    runInMillis(configMillis, checkActive)
+    runIn(configSeconds, checkActive)
 }
 
 def sendAlert()
 {
-    Long configMillis = configMinutes * 60000
-    Long millis = idleMillis()
+    Long configSeconds = configMinutes * 60
+    Long seconds = idleSeconds()
 
-    if (millis < configMillis)
+    if (seconds < configSeconds)
     {
         unschedule()
-        runInMillis(configMillis - millis, checkIdle)
+        runIn(configSeconds - seconds, checkIdle)
         return
     }
 
-    Long minutes = millis / 60000
+    Long minutes = seconds / 60
     String desc = "Idle Alert: device ${configDevice} has been idle for ${minutes} minutes"
     log.info "${desc}"
     if (appEvents) sendEvent(name: "SSA", value: "Idle", descriptionText: "${desc}")

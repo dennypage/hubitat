@@ -20,7 +20,7 @@
       "name": "Simple Idle Alert",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-idle-alerts/simple-idle-alert.groovy",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "required": true,
       "oauth": false
     }

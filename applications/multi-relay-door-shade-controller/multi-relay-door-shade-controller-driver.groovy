@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2022, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
 //                  This helps reduce confusion if the device has
 //                  been operated with a different controller.
 // Version 1.1.1    Normalize logging
+// Version 1.2.0    Add Actuator capability to allow device to
+//                  appear in selection lists.
 //
 
 metadata
@@ -41,6 +43,7 @@ metadata
         name: "Multi-Relay Door/Shade Controller", namespace: "cococafe", author: "Denny Page"
     )
     {
+        capability "Actuator"
         capability "DoorControl"
         capability "WindowShade"
 

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2022, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,8 @@
 //                  Add refresh capability (node ping)
 // Version 2.0.1    Use SwitchMultilevelReport for node ping.
 //                  Send events on refresh.
+// Version 2.1.0    Add Actuator capability to allow device to
+//                  appear in selection lists.
 //
 
 metadata
@@ -68,6 +70,7 @@ metadata
         name: "Somfy ZRTSII Node", namespace: "cococafe", author: "Denny Page"
     )
     {
+        capability "Actuator"
         capability "WindowShade"
         capability "Refresh"
         command "stop"

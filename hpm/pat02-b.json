@@ -11,7 +11,7 @@
       "name": "Philio PAT02-B",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/pat02-b/pat02-b.groovy",
-      "version": "1.5.4",
+      "version": "1.6.1",
       "required": true
     }
   ]

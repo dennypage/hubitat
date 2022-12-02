@@ -41,6 +41,9 @@
 //                  than NotificationReport for flood sensor
 // Version 2.0.3    Older firmware may also send SensorBinaryReport for tamper
 // Version 2.0.4    Notify if parameter 7 is not factory default
+// Version 2.1.0    Set state change to true for temperature/humidity/battery
+//                  events to properly handle auto reports
+// Version 2.1.1    Fix zero comparison that prevented disabling of various reports
 //
 
 metadata
@@ -161,7 +164,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 7)))
     }
 
-    value = temperatureDifferential ? temperatureDifferential.toInteger() : 1
+    value = (temperatureDifferential != null) ? temperatureDifferential.toInteger() : 1
     if (resync || state.temperatureDifferential != value)
     {
         log.warn "Updating device temperatureDifferential: ${value}"
@@ -169,7 +172,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 21)))
     }
 
-    value = humidityDifferential ? humidityDifferential.toInteger() : 5
+    value = (humidityDifferential != null) ? humidityDifferential.toInteger() : 5
     if (resync || state.humidityDifferential != value)
     {
         log.warn "Updating device humidityDifferential: ${value}"
@@ -177,7 +180,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 23)))
     }
 
-    value = tickInterval ? tickInterval.toInteger() : 30
+    value = (tickInterval != null) ? tickInterval.toInteger() : 30
     if (resync || state.tickInterval != value)
     {
         log.warn "Updating device tickInterval: ${value}"
@@ -185,7 +188,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 20)))
     }
 
-    value = batteryInterval ? batteryInterval.toInteger() : 12
+    value = (batteryInterval != null) ? batteryInterval.toInteger() : 12
     if (resync || state.batteryInterval != value)
     {
         log.warn "Updating device batteryInterval: ${value}"
@@ -193,7 +196,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 10)))
     }
 
-    value = temperatureInterval ? temperatureInterval.toInteger() : 12
+    value = (temperatureInterval != null) ? temperatureInterval.toInteger() : 12
     if (resync || state.temperatureInterval != value)
     {
         log.warn "Updating device temperatureInterval: ${value}"
@@ -201,7 +204,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 13)))
     }
 
-    value = humidityInterval ? humidityInterval.toInteger() : 12
+    value = (humidityInterval != null) ? humidityInterval.toInteger() : 12
     if (resync || state.humidityInterval != value)
     {
         log.warn "Updating device humidityInterval: ${value}"
@@ -209,7 +212,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 14)))
     }
 
-    value = waterInterval ? waterInterval.toInteger() : 12
+    value = (waterInterval != null) ? waterInterval.toInteger() : 12
     if (resync || state.waterInterval != value)
     {
         log.warn "Updating device waterInterval: ${value}"
@@ -217,7 +220,7 @@ def deviceSync()
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 15)))
     }
 
-    value = wakeUpInterval ? wakeUpInterval.toInteger() : 1440
+    value = (wakeUpInterval != null) ? wakeUpInterval.toInteger() : 1440
     if (resync || state.wakeUpInterval != value)
     {
         log.warn "Updating device wakeUpInterval: ${value}"
@@ -411,6 +414,7 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
                 if (logEnable) log.debug "${device.displayName} adjusted temperature by ${temperatureOffset} to ${map.value}°${map.unit}"
             }
             map.descriptionText = "${device.displayName}: temperature is ${map.value}°${map.unit}"
+            map.isStateChange = true
             break
 
         case 5: // humidity
@@ -427,6 +431,7 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
                 if (logEnable) log.debug "${device.displayName} adjusted humidity by ${humidityOffset} to ${map.value}${map.unit}"
             }
             map.descriptionText = "${device.displayName}: humidity is ${map.value}${map.unit}"
+            map.isStateChange = true
             break
 
         default:
@@ -456,6 +461,7 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     map.value = batteryLevel
     map.unit = "%"
     map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
+    map.isStateChange = true
     sendEvent(map)
     if (txtEnable) log.info "${map.descriptionText}"
 }

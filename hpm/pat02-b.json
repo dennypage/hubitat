@@ -2,6 +2,7 @@
   "packageName": "Philio PAT02-B Temperature / Humidity sensor",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
+  "version": "1.6.1",
   "dateReleased": "2020-11-27",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02-b",
   "communityLink": "https://community.hubitat.com/t/philio-pat02-b-temperature-humidity-driver/43039",
@@ -11,7 +12,6 @@
       "name": "Philio PAT02-B",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/pat02-b/pat02-b.groovy",
-      "version": "1.6.1",
       "required": true
     }
   ]

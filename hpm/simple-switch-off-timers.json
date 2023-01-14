@@ -2,6 +2,7 @@
   "packageName": "Simple Switch Off TImers",
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
+  "version": "1.1.0",
   "dateReleased": "2020-06-23",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-switch-off-timers",
   "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
@@ -11,7 +12,6 @@
       "name": "Simple Switch Off Timers",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-off-timers/simple-switch-off-timers.groovy",
-      "version": "1.0.0",
       "required": true,
       "oauth": false
     },
@@ -20,7 +20,6 @@
       "name": "Simple Switch Off Timer",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-off-timers/simple-switch-off-timer.groovy",
-      "version": "1.1.0",
       "required": true,
       "oauth": false
     }

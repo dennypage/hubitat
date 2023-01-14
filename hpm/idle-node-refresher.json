@@ -2,6 +2,7 @@
   "packageName": "Idle Node Refresher",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
+  "version": "1.1.0",
   "dateReleased": "2020-11-25",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/idle-node-refresher",
   "communityLink": "https://community.hubitat.com/t/release-idle-node-refresher/56613",
@@ -11,7 +12,6 @@
       "name": "Idle Node Refreshers",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/idle-node-refresher/idle-node-refreshers.groovy",
-      "version": "1.0.0",
       "required": true,
       "oauth": false
     },
@@ -20,7 +20,6 @@
       "name": "Idle Node Refresher",
       "namespace": "cococafe",
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/idle-node-refresher/idle-node-refresher.groovy",
-      "version": "1.1.0",
       "required": true,
       "oauth": false
     }

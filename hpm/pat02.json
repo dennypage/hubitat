@@ -3,7 +3,8 @@
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
   "version": "2.1.1",
-  "dateReleased": "2022-05-29",
+  "dateReleased": "2022-12-01",
+  "releaseNotes": "2.1.1 Fix zero comparison that prevented disabling of reports\n2.1.0 Set state change to true for temperature/humidity/battery",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02",
   "communityLink": "https://community.hubitat.com/t/release-philip-pat02-flood-temperature-humidity-driver/94644",
   "drivers": [

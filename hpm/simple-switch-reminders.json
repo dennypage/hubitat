@@ -3,7 +3,8 @@
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
   "version": "1.1.0",
-  "dateReleased": "2020-06-23",
+  "dateReleased": "2021-01-01",
+  "releaseNotes": "1.1.0 Add App Events",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-switch-reminders",
   "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
   "apps": [

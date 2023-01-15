@@ -3,7 +3,8 @@
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
   "version": "1.6.1",
-  "dateReleased": "2020-11-27",
+  "dateReleased": "2022-12-01",
+  "releaseNotes": "1.6.1 Fix zero comparison that prevented disabling of reports\n1.6.0 Set state change to true for temperature/humidity/battery",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/pat02-b",
   "communityLink": "https://community.hubitat.com/t/philio-pat02-b-temperature-humidity-driver/43039",
   "drivers": [

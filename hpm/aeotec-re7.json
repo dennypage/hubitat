@@ -4,6 +4,7 @@
   "author": "Denny Page",
   "version": "1.4.0",
   "dateReleased": "2020-11-27",
+  "releaseNotes": "1.4.0 Normalize logging\n1.3.1 Mark power test seconds required\n1.3.0 Use zWaveSecureEncap",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/aeotec-re7",
   "communityLink": "https://community.hubitat.com/t/release-aeotec-range-extender-7/45303",
   "drivers": [

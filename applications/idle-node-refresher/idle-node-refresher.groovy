@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2022, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,9 @@
 // Version 1.1.0    Add initialization function to ensure worker schedule
 //                  isn't lost during reboot. Use seconds for calculations
 //                  rather than milliseconds. Avoid runInMillis.
+// Version 1.1.1    Delay actions on reboot
+// Version 1.1.2    Change initialized function to systemStart subscription.
+//                  Initialized isn't called for apps.
 //
 
 definition(
@@ -105,6 +108,9 @@ def installed()
 
 def updated()
 {
+    subscribe(location, "systemStart", hubRestartHandler)
+    unschedule()
+
     if (idleHours < 1)
     {
         app.updateSetting("idleHours", 1)
@@ -116,13 +122,13 @@ def updated()
         log.warn "Input value for Refresh Interval Minutes too low: value changed to 2 minutes"
     }
 
-    unschedule()
     installed()
 }
 
-def initialize()
+def hubRestartHandler(evt)
 {
-    updated()
+    unschedule()
+    runIn(60, installed)
 }
 
 private Long lastNodeActivity(node)

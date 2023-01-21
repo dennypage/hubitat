@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2022, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@
 // Version 1.2.0    Add initialization function to ensure worker schedule
 //                  isn't lost during reboot. Use seconds for calculations
 //                  rather than milliseconds. Avoid runInMillis.
+// Version 1.2.1    Change initialized function to systemStart subscription.
+//                  Initialized isn't called for apps.
 //
 
 definition(
@@ -109,14 +111,16 @@ def installed()
 
 def updated()
 {
+    subscribe(location, "systemStart", hubRestartHandler)
     unschedule()
     installed()
 }
 
-def initialize()
+def hubRestartHandler(evt)
 {
     updated()
 }
+
 
 private Long lastActivity(device)
 {

@@ -35,6 +35,8 @@
 // Version 1.1.1    Normalize logging
 // Version 1.2.0    Add Actuator capability to allow device to
 //                  appear in selection lists.
+// Version 1.2.1    Disable DoorControl to allow operation with
+//                  percentage reporting open in Apple Home.
 //
 
 metadata
@@ -44,9 +46,8 @@ metadata
     )
     {
         capability "Actuator"
-        capability "DoorControl"
         capability "WindowShade"
-
+        //capability "DoorControl"
         command "stop"
     }
 }

@@ -45,7 +45,7 @@ definition(
 
 preferences
 {
-     page(name: "configPage")
+    page(name: "configPage")
 }
 
 def configPage()

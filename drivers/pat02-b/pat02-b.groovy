@@ -39,6 +39,7 @@
 // Version 1.6.0    Set state change to true for temperature/humidity/battery
 //                  events to properly handle auto reports
 // Version 1.6.1    Fix zero comparison that prevented disabling of various reports
+// Version 1.6.2    Revert explicit setting of isStateChange
 //
 
 metadata
@@ -383,7 +384,6 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
                 if (logEnable) log.debug "${device.displayName} adjusted temperature by ${temperatureOffset} to ${map.value}°${map.unit}"
             }
             map.descriptionText = "${device.displayName}: temperature is ${map.value}°${map.unit}"
-            map.isStateChange = true
             break
 
         case 5: // humidity
@@ -400,7 +400,6 @@ def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport 
                 if (logEnable) log.debug "${device.displayName} adjusted humidity by ${humidityOffset} to ${map.value}${map.unit}"
             }
             map.descriptionText = "${device.displayName}: humidity is ${map.value}${map.unit}"
-            map.isStateChange = true
             break
 
         default:
@@ -430,7 +429,6 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     map.value = batteryLevel
     map.unit = "%"
     map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
-    map.isStateChange = true
     sendEvent(map)
     if (txtEnable) log.info "${map.descriptionText}"
 }

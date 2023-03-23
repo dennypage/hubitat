@@ -1,7 +1,8 @@
 ### UPS monitor and shutdown controller for use with Network UPS Tools (NUT)
 
-This device driver (NUT upsmon) provides a Hubitat implementation upsmon, which is the UPS monitor and shutdown controller used by NUT.  The NUT upsmon driver is used with a remote NUT server (upsd), running on a general purpose server, NAS, etc.
+This driver implements a UPS monitor and shutdown controller for use with Network UPS Tools (NUT).
 
+The driver works in conjunction with a remote NUT upsd server, and provides the equivalent of NUT's upsmon for the Hubitat. In other words, it monitors the ups and shuts the hub down when the ups battery is low.
 
 #### Install the device driver
 

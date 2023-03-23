@@ -25,6 +25,13 @@
       "description": "Application and driver for a Multi-Relay Door/Shade Controller"
     },
     {
+      "name": "NUT ups monitor (upsmon)",
+      "category": "Integrations",
+      "tags": ["Tools & Utilities", "LAN"],
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/nut-upsmon.json",
+      "description": "UPS monitor and shutdown controller for use with Network UPS Tools (NUT)"
+    },
+    {
       "name": "Philio PAT02 Flood / Temperature / Humidity sensors",
       "category": "Integrations",
       "tags": ["Temperature & Humidity", "ZWave"],

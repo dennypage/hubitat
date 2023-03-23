@@ -1,0 +1,19 @@
+{
+  "packageName": "NUT ups monitor (upsmon)",
+  "minimumHEVersion": "2.2.3",
+  "author": "Denny Page",
+  "version": "1.0.0",
+  "dateReleased": "2023-03-22",
+  "releaseNotes": "1.0.0 Initial release",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/nut-upsmon",
+  "communityLink": "https://community.hubitat.com/t/release-network-ups-tools-nut-monitor-and-shutdown-controller-upsmon/115483",
+  "drivers": [
+    {
+      "id": "c406b037-e4d2-4402-a852-e59cca787c27",
+      "name": "NUT upsmon",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/nut-upsmon/nut-upsmon.groovy",
+      "required": true
+    }
+  ]
+}

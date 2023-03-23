@@ -27,7 +27,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Network UPS Tools monitor (upsmon) for Hubitat
+ * Network UPS Tools (NUT) monitor and shutdown controller (upsmon) for Hubitat
  *
  * Version 1.0.0    Initial release
  */

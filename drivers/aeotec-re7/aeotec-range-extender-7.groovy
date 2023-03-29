@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,11 @@
 // Version 1.3.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 // Version 1.3.1    Mark seconds as a required input for power test
 // Version 1.4.0    Normalize logging
+// Version 1.4.1    Declare commandClassVersions
+//                  Remove unused securityv1 processing
 //
+
+import groovy.transform.Field
 
 metadata
 {
@@ -84,6 +88,8 @@ metadata
         // 0x9F COMMAND_CLASS_SECURITY_2
     }
 }
+
+@Field static final Map commandClassVersions = [0x73:1, 0x86:3, 0x87:3]
 
 preferences
 {
@@ -305,18 +311,6 @@ void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd)
     device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
     device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
-}
-
-def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd)
-{
-    encapCmd = cmd.encapsulatedCommand()
-    if (encapCmd)
-    {
-        return zwaveEvent(encapCmd)
-    }
-
-    log.warn "Unable to extract encapsulated cmd: ${cmd.toString()}"
-    return null
 }
 
 def zwaveEvent(hubitat.zwave.Command cmd)

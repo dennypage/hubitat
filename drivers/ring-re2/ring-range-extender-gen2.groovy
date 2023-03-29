@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2022, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,11 @@
 // Version 1.2.0    Normalize logging.
 // Version 1.2.1    Minor capitalization fix.
 // Version 1.3.0    Add Initialize capability to cover PowerSource changes while hub not running.
+// Version 1.3.1    Declare commandClassVersions
+//                  Remove unused securityv1 processing
+//
+
+import groovy.transform.Field
 
 metadata
 {
@@ -84,6 +89,8 @@ metadata
     }
 }
 
+@Field static final Map commandClassVersions = [0x6C:1, 0x70:4, 0x71:8, 0x73:1, 0x80:2, 0x86:3, 0x87:3]
+
 preferences
 {
     input name: "heartbeatInterval", title: "Heartbeat interval in minutes",
@@ -115,10 +122,10 @@ def refresh()
     def cmds = []
     cmds.add(zwaveSecureEncap(zwave.notificationV8.notificationGet(notificationType: 8, v1AlarmType: 0, event: 2)))
     cmds.add(zwaveSecureEncap(zwave.notificationV8.notificationGet(notificationType: 8, v1AlarmType: 0, event: 3)))
-    cmds.add(zwaveSecureEncap(zwave.batteryV1.batteryGet()))
+    cmds.add(zwaveSecureEncap(zwave.batteryV2.batteryGet()))
     cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet()))
     cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet()))
-    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 1)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV4.configurationGet(parameterNumber: 1)))
     delayBetween(cmds, 200)
 }
 
@@ -138,8 +145,8 @@ def configure()
     cmds.add(zwaveSecureEncap(zwave.manufacturerSpecificV2.deviceSpecificGet(deviceIdType: 1)))
 
     def interval = heartbeatInterval ? heartbeatInterval.toInteger() : 70
-    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(parameterNumber: 1, scaledConfigurationValue: interval, size: 1)))
-    cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 1)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV4.configurationSet(parameterNumber: 1, scaledConfigurationValue: interval, size: 1)))
+    cmds.add(zwaveSecureEncap(zwave.configurationV4.configurationGet(parameterNumber: 1)))
     delayBetween(cmds, 200)
 }
 
@@ -225,7 +232,7 @@ def parse(String description)
 {
     if (logEnable) log.debug "parse: ${description}"
 
-    hubitat.zwave.Command cmd = zwave.parse(description,commandClassVersions)
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
     if (cmd)
     {
         return zwaveEvent(cmd)
@@ -302,8 +309,10 @@ def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
     }
 }
 
-def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
+def zwaveEvent(hubitat.zwave.commands.batteryv2.BatteryReport cmd)
 {
+    if (logEnable) log.debug "BatteryReport: ${cmd.toString()}"
+
     def map = [:]
 
     map.name = "battery"
@@ -435,7 +444,7 @@ void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv2.DeviceSpecificRepo
     }
 }
 
-    def zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd)
+    def zwaveEvent(hubitat.zwave.commands.configurationv4.ConfigurationReport cmd)
 {
     if (logEnable) log.debug "ConfigurationReport: ${cmd.toString()}"
 
@@ -446,15 +455,6 @@ void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv2.DeviceSpecificRepo
             break
         default:
             if (logEnable) log.debug "Unknown Configuration Report Received ConfigurationReport: ${cmd.toString()}"
-    }
-}
-
-def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd)
-{
-    encapCmd = cmd.encapsulatedCommand()
-    if (encapCmd)
-    {
-        zwaveEvent(encapCmd)
     }
 }
 

@@ -45,7 +45,10 @@
 //                  events to properly handle auto reports
 // Version 2.1.1    Fix zero comparison that prevented disabling of various reports
 // Version 2.1.2    Revert explicit setting of isStateChange
+// Version 2.1.3    Declare commandClassVersions
 //
+
+import groovy.transform.Field
 
 metadata
 {
@@ -69,25 +72,27 @@ metadata
         fingerprint mfr: "013C", prod: "0002", deviceId: "0021" // PAT02-C
         fingerprint mfr: "013C", prod: "0002", deviceId: "002B" // PAT02-B-NS (No Security)
 
-        // 0x30 COMMAND_CLASS_SENSOR_BINARY_V2 (removed in later firmware)
-        // 0x31 COMMAND_CLASS_SENSOR_MULTILEVEL_V5 (later firmware uses V11)
+        // 0x30 COMMAND_CLASS_SENSOR_BINARY_V2 (removed in newer firmware)
+        // 0x31 COMMAND_CLASS_SENSOR_MULTILEVEL_V11 (older firmware is V5)
         // 0x59 COMMAND_CLASS_ASSOCIATION_GRP_INFO
         // 0x5A COMMAND_CLASS_DEVICE_RESET_LOCALLY
         // 0x5E COMMAND_CLASS_ZWAVEPLUS_INFO_V2
         // 0x70 COMMAND_CLASS_CONFIGURATION
-        // 0x71 COMMAND_CLASS_NOTIFICATION_V4 (later firmware uses V8)
+        // 0x71 COMMAND_CLASS_NOTIFICATION_V8 (older firmware is V4)
         // 0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
         // 0x73 COMMAND_CLASS_POWERLEVEL
         // 0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2
         // 0x80 COMMAND_CLASS_BATTERY
         // 0x84 COMMAND_CLASS_WAKE_UP_V2
         // 0x85 COMMAND_CLASS_ASSOCIATION_V2
-        // 0x86 COMMAND_CLASS_VERSION_V2 (later firmware uses V3)
+        // 0x86 COMMAND_CLASS_VERSION_V3 (older firmware is V2)
         // 0x8F COMMAND_CLASS_MULTI_CMD
         // 0x98 COMMAND_CLASS_SECURITY
-        // 0x9F COMMAND_CLASS_SECURITY_2 (only in later firmware)
+        // 0x9F COMMAND_CLASS_SECURITY_2 (only in newer firmware)
     }
 }
+
+@Field static final Map commandClassVersions = [0x30:2, 0x31:11, 0x70:1, 0x71:8, 0x80:1, 0x84:2, 0x86:3, 0x98:1]
 
 preferences
 {
@@ -161,7 +166,7 @@ def deviceSync()
     def cmds = []
     if (resync)
     {
-        cmds.add(zwaveSecureEncap(zwave.versionV2.versionGet()))
+        cmds.add(zwaveSecureEncap(zwave.versionV3.versionGet()))
         cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 7)))
     }
 
@@ -232,10 +237,10 @@ def deviceSync()
     if (refresh)
     {
         cmds.add(zwaveSecureEncap(zwave.batteryV1.batteryGet()))
-        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)))
-        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)))
-        cmds.add(zwaveSecureEncap(zwave.notificationV4.notificationGet(notificationType: 5, v1AlarmType: 0, event: 0)))
-        cmds.add(zwaveSecureEncap(zwave.notificationV4.notificationGet(notificationType: 5, v1AlarmType: 0, event: 2)))
+        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV11.sensorMultilevelGet(sensorType: 1)))
+        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV11.sensorMultilevelGet(sensorType: 5)))
+        cmds.add(zwaveSecureEncap(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0, event: 0)))
+        cmds.add(zwaveSecureEncap(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0, event: 2)))
         cmds.add(zwaveSecureEncap(zwave.sensorBinaryV2.sensorBinaryGet(sensorType: 6)))
     }
 
@@ -391,7 +396,7 @@ def parse(String description)
     return null
 }
 
-def zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd)
+def zwaveEvent(hubitat.zwave.commands.sensormultilevelv11.SensorMultilevelReport cmd)
 {
     def map = [:]
 
@@ -464,7 +469,7 @@ def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
     if (txtEnable) log.info "${map.descriptionText}"
 }
 
-def zwaveEvent(hubitat.zwave.commands.notificationv4.NotificationReport cmd)
+def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
 {
     def map = [:]
 
@@ -570,7 +575,7 @@ def zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpNotification cmd)
     runInMillis(200, deviceSync)
 }
 
-void zwaveEvent(hubitat.zwave.commands.versionv2.VersionReport cmd)
+void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd)
 {
     if (logEnable) log.debug "VersionReport: ${cmd}"
     device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")

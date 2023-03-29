@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2022, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,11 @@
 //                  Send events on refresh.
 // Version 2.1.0    Add Actuator capability to allow device to
 //                  appear in selection lists.
+// Version 2.1.1    Declare commandClassVersions
+//                  Add debug logging
 //
+
+import groovy.transform.Field
 
 metadata
 {
@@ -119,6 +123,8 @@ metadata
     }
 }
 
+@Field static final Map commandClassVersions = [0x26:1, 0x72:1, 0x86:1]
+
 preferences
 {
     input name: "travelTime", title: "Open / Close travel time in seconds",
@@ -148,8 +154,12 @@ def installed()
 
 def refresh()
 {
-    // Essentially just a node ping
-    zwave.switchMultilevelV1.switchMultilevelGet().format()
+    def cmds = []
+
+    cmds.add(zwave.versionV1.versionGet().format())
+    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
+    cmds.add(zwave.switchMultilevelV1.switchMultilevelGet().format())
+    delayBetween(cmds, 200)
 }
 
 def moveComplete(args)
@@ -316,6 +326,18 @@ def parse(String description)
     }
 
     log.warn "Non Z-Wave parse event: ${description}"
+    return null
+}
+
+def zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd)
+{
+    if (logEnable) log.debug "VersionReport: ${cmd}"
+    return null
+}
+
+def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
+{
+    if (logEnable) log.debug "Manufacturer Specific Report: ${cmd}"
     return null
 }
 

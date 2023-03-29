@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,11 @@
 // Version 1.1.0    Unhandled events logged as warnings
 // Version 2.0.0    Add a refresh capability (node ping)
 // Version 2.0.1    Don't log on node ping
+// Version 2.0.2    Declare commandClassVersions
+//                  Add debug logging
 //
+
+import groovy.transform.Field
 
 metadata
 {
@@ -56,14 +60,20 @@ metadata
     }
 }
 
+@Field static final Map commandClassVersions = [0x72:1, 0x86:1]
+
 preferences
 {
+    input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
 }
 
 def refresh()
 {
-    // Essentially just a node ping
-    zwave.manufacturerSpecificV1.manufacturerSpecificGet().format()
+    def cmds = []
+
+    cmds.add(zwave.versionV1.versionGet().format())
+    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
+    delayBetween(cmds, 200)
 }
 
 def parse(String description)
@@ -78,8 +88,15 @@ def parse(String description)
     return null
 }
 
+def zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd)
+{
+    if (logEnable) log.debug "VersionReport: ${cmd}"
+    return null
+}
+
 def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
 {
+    if (logEnable) log.debug "Manufacturer Specific Report: ${cmd}"
     return null
 }
 

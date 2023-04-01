@@ -36,16 +36,36 @@
 // Version 1.3.0    Use zwaveSecureEncap method introduced in Hubitat 2.2.3.
 // Version 1.3.1    Mark seconds as a required input for power test
 // Version 1.4.0    Normalize logging
-// Version 1.4.1    Declare commandClassVersions
-//                  Remove unused securityv1 processing
+// Version 2.0.0    Code restructure and cleanup
 //
+
+// Supported Z-Wave Classes:
+//
+//     0x55 COMMAND_CLASS_TRANSPORT_SERVICE_V2
+//     0x59 COMMAND_CLASS_ASSOCIATION_GRP_INFO
+//     0x5A COMMAND_CLASS_DEVICE_RESET_LOCALLY
+//     0x5E COMMAND_CLASS_ZWAVEPLUS_INFO_V2
+//     0x6C COMMAND_CLASS_SUPERVISION_V1
+//     0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
+//     0x73 COMMAND_CLASS_POWERLEVEL
+//     0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2
+//     0x85 COMMAND_CLASS_ASSOCIATION_V2
+//     0x86 COMMAND_CLASS_VERSION_V3
+//     0x87 COMMAND_CLASS_INDICATOR_V3
+//     0x8E COMMAND_CLASS_MULTICHANNEL_ASSOCIATION_V3
+//     0x9F COMMAND_CLASS_SECURITY_2
 
 import groovy.transform.Field
 
+@Field static final Map commandClassVersions = [0x73:1, 0x86:3, 0x87:3]
+
+@Field static final List powerLevels = ["normal", "-1dBm", "-2dBm", "-3dBm", "-4dBm", "-5dBm", "-6dBm", "-7dBm", "-8dBm", "-9dBm"]
+
 metadata
 {
-    definition (
-        name: "Aeotec Range Extender 7", namespace: "cococafe", author: "Denny Page"
+    definition(
+        name: "Aeotec Range Extender 7", namespace: "cococafe", author: "Denny Page",
+        importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/aeotec-re7/aeotec-range-extender-7.groovy"
     )
     {
         capability "Configuration"
@@ -58,38 +78,15 @@ metadata
 
         command "powerTest", [[name: "seconds*", type: "NUMBER", defaultValue: "0",
                                description: "Seconds before returning to normal power"],
-                              [name: "power", type: "ENUM", constraints: ["normal",
-                                                          "-1dBm", "-2dBm", "-3dBm",
-                                                          "-4dBm", "-5dBm", "-6dBm",
-                                                          "-7dBm", "-8dBm", "-9dBm"]]]
+                              [name: "power", type: "ENUM", constraints: powerLevels]]
 
         command "rangeTest", [[name: "node*", type: "NUMBER", description: "Node to test against (decimal)"],
-                              [name: "power", type: "ENUM", constraints: ["normal",
-                                                          "-1dBm", "-2dBm", "-3dBm",
-                                                          "-4dBm", "-5dBm", "-6dBm",
-                                                          "-7dBm", "-8dBm", "-9dBm"]]]
+                              [name: "power", type: "ENUM", constraints: powerLevels]]
 
         fingerprint mfr:"0371", prod:"0104", deviceId:"00BD",
             inClusters: "0x5E,0x85,0x8E,0x59,0x55,0x86,0x72,0x5A,0x87,0x73,0x9F,0x6C,0x7A"
-
-
-        // 0x55 COMMAND_CLASS_TRANSPORT_SERVICE_V2
-        // 0x59 COMMAND_CLASS_ASSOCIATION_GRP_INFO
-        // 0x5A COMMAND_CLASS_DEVICE_RESET_LOCALLY
-        // 0x5E COMMAND_CLASS_ZWAVEPLUS_INFO_V2
-        // 0x6C COMMAND_CLASS_SUPERVISION_V1
-        // 0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
-        // 0x73 COMMAND_CLASS_POWERLEVEL
-        // 0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2
-        // 0x85 COMMAND_CLASS_ASSOCIATION_V2
-        // 0x86 COMMAND_CLASS_VERSION_V3
-        // 0x87 COMMAND_CLASS_INDICATOR_V3
-        // 0x8E COMMAND_CLASS_MULTICHANNEL_ASSOCIATION_V3
-        // 0x9F COMMAND_CLASS_SECURITY_2
     }
 }
-
-@Field static final Map commandClassVersions = [0x73:1, 0x86:3, 0x87:3]
 
 preferences
 {
@@ -103,218 +100,205 @@ preferences
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
 }
 
-void logsOff()
-{
+void logsOff() {
     device.updateSetting("logEnable", [value:"false", type:"bool"])
-    log.warn "debug logging disabled"
+    log.warn "Debug logging disabled"
 }
 
-void installed()
-{
+void installed() {
     runIn(1800, logsOff)
 }
 
-def refresh()
-{
+void refresh() {
     if (logEnable) log.debug "Refresh"
 
-    def cmds = []
-    cmds.add(zwaveSecureEncap(zwave.indicatorV3.indicatorGet()))
-    cmds.add(zwaveSecureEncap(zwave.versionV3.versionGet()))
-    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet()))
-    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet()))
-    delayBetween(cmds, 200)
+    List<hubitat.zwave.Command> cmds = []
+    cmds.add(zwave.indicatorV3.indicatorGet())
+    cmds.add(zwave.versionV3.versionGet())
+    cmds.add(zwave.powerlevelV1.powerlevelGet())
+    cmds.add(zwave.powerlevelV1.powerlevelTestNodeGet())
+    sendCmds(cmds)
 }
 
-def configure()
-{
+void configure() {
     if (logEnable) log.debug "Configure"
 
     Integer indicatorValue = indicator ? 0xFF : 0
 
-    def cmds = []
-    cmds.add(zwaveSecureEncap(zwave.indicatorV3.indicatorSet(value: indicatorValue)))
-    cmds.add(zwaveSecureEncap(zwave.indicatorV3.indicatorGet()))
-    delayBetween(cmds, 200)
+    List<hubitat.zwave.Command> cmds = []
+    cmds.add(zwave.indicatorV3.indicatorSet(value: indicatorValue))
+    cmds.add(zwave.indicatorV3.indicatorGet())
+    sendCmds(cmds)
 }
 
-def updated()
-{
+void updated() {
     if (logEnable) log.debug "Updated preferences"
 
-    log.warn "debug logging is ${logEnable}"
-    log.warn "description logging is ${txtEnable}"
+    log.warn "Debug logging is ${logEnable}"
+    log.warn "Description logging is ${txtEnable}"
 
     runIn(1, configure)
 }
 
-static String powerLevelToString(Number power)
-{
-    return power ? "-${power}dBm" : "normal"
+static List<String> powerLevelToString(Number power) {
+    return power ? ["-${power}", "dBm"] : ["normal", ""]
 }
 
-static Integer stringToPowerLevel(String string)
-{
+static Integer stringToPowerLevel(String string) {
     def match = (string =~ /-([0-9]+)dBm/)
     if (match.find()) return match.group(1).toInteger()
     return 0
 }
 
-def powerTest(Number seconds, String powerString)
-{
-    if (seconds < 0 || seconds > 255)
-    {
+void powerTest(Number seconds, String powerString) {
+    if (seconds < 0 || seconds > 255) {
         log.error "Invalid powerTest seconds ${seconds}"
-        return null
+        return
     }
 
-    def power = stringToPowerLevel(powerString)
-
-    def cmds = []
-    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelSet(powerLevel: power, timeout: seconds)))
-    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet()))
-    delayBetween(cmds, 200)
+    Short power = stringToPowerLevel(powerString)
+    List<hubitat.zwave.Command> cmds = []
+    cmds.add(zwave.powerlevelV1.powerlevelSet(powerLevel: power, timeout: seconds))
+    cmds.add(zwave.powerlevelV1.powerlevelGet())
+    sendCmds(cmds)
 }
 
-def rangeTest(Number node, String powerString)
-{
-    if (node < 1)
-    {
+void rangeTest(Number node, String powerString) {
+    if (node < 1) {
         log.error "Invalid test node ${node}"
-        return null
+        return
     }
 
-    def power = stringToPowerLevel(powerString)
-    def frames = testFrames ? testFrames.toInteger() : 10
+    Short power = stringToPowerLevel(powerString)
+    Integer frames = testFrames ? testFrames.toInteger() : 10
+    logEvent("rangeTest", "pending", null, "Range test pending - sending ${frames} frames to node ${node} at power level ${powerString}")
 
-    def map = [:]
-    map.name = "rangeTest"
-    map.value = "pending"
-    map.descriptionText = "${device.displayName}: range test pending - sending ${frames} frames to node ${node} at power level ${powerString}"
+    List<hubitat.zwave.Command> cmds = []
+    cmds.add(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power, testFrameCount: frames, testNodeid: node))
+    cmds.add(zwave.powerlevelV1.powerlevelTestNodeGet())
+    sendCmds(cmds, 100)
+}
+
+void requestPowerLevel() {
+    sendCmd(zwave.powerlevelV1.powerlevelGet())
+}
+
+void requestTestNode() {
+    sendCmd(zwave.powerlevelV1.powerlevelTestNodeGet())
+}
+
+void logEvent(String name, String value, String unit = null, String description = null, Boolean warn = false) {
+    Map map = [name: name, value: value]
+    if (unit) {
+        map.unit = unit
+    }
+    if (description) {
+        map.descriptionText = description
+    }
     sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
 
-    def cmds = []
-    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeSet(powerLevel: power,
-                                                                testFrameCount: frames,
-                                                                testNodeid: node)))
-    cmds.add(zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet()))
-    delayBetween(cmds, 100)
-}
-
-def requestPowerLevel()
-{
-    zwaveSecureEncap(zwave.powerlevelV1.powerlevelGet())
-}
-
-def requestTestNode()
-{
-    zwaveSecureEncap(zwave.powerlevelV1.powerlevelTestNodeGet())
-}
-
-def parse(String description)
-{
-    hubitat.zwave.Command cmd = zwave.parse(description,commandClassVersions)
-    if (cmd)
-    {
-        return zwaveEvent(cmd)
+    if (description) {
+        if (warn) {
+            log.warn description
+        }
+        else if (txtEnable) {
+            log.info description
+        }
     }
-
-    if (logEnable) log.debug "Non Z-Wave parse event: ${description}"
-    return null
 }
 
-void zwaveEvent(hubitat.zwave.commands.indicatorv3.IndicatorReport cmd)
-{
-    if (logEnable) log.debug "IndicatorReport: ${cmd.toString()}"
+void sendCmd(hubitat.zwave.Command cmd) {
+    sendHubCommand(new hubitat.device.HubAction(zwaveSecureEncap(cmd.format()), hubitat.device.Protocol.ZWAVE))
+}
+
+void sendCmds(List<hubitat.zwave.Command> cmds, Long interval = 200) {
+    sendHubCommand(new hubitat.device.HubMultiAction(delayBetween(cmds.collect { cmd -> zwaveSecureEncap(cmd) }, interval), hubitat.device.Protocol.ZWAVE))
+}
+
+void parse(String description) {
+    if (logEnable) log.debug "parse: ${description}"
+
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
+    if (cmd) {
+        zwaveEvent(cmd)
+    }
+    else {
+        log.warn "Non Z-Wave parse event: ${description}"
+    }
+}
+
+void zwaveEvent(hubitat.zwave.commands.indicatorv3.IndicatorReport cmd) {
+    if (logEnable) log.debug "IndicatorReport: ${cmd}"
 
     String status = cmd.value ? "on" : "off"
-
-    def map = [:]
-    map.name = "indicator"
-    map.value = "${status}"
-    map.descriptionText = "${device.displayName}: indicator light is ${status}"
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
+    logEvent("indicator", status, null, "Indicator light is ${status}")
 }
 
-def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelReport cmd) {
     unschedule(requestPowerLevel)
 
-    if (logEnable) log.debug "PowerLevelReport: ${cmd.toString()}"
+    if (logEnable) log.debug "PowerLevelReport: ${cmd}"
 
-    power = powerLevelToString(cmd.powerLevel)
-    def map = [:]
-    map.name = "powerLevel"
-    map.value = "${power}"
-    map.descriptionText = "${device.displayName}: transmit power level is ${power}, timeout ${cmd.timeout} seconds"
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
+    String power, unit, description
+    (power, unit) = powerLevelToString(cmd.powerLevel)
+    description = "Transmit power level is ${power}${unit}"
+    if (cmd.timeout) {
+        description += ", timeout in ${cmd.timeout} seconds"
+    }
+    logEvent("powerLevel", power, unit, description)
 
-    if (cmd.timeout)
-    {
+    if (cmd.timeout) {
         runIn(cmd.timeout, requestPowerLevel)
     }
 }
 
-def zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.powerlevelv1.PowerlevelTestNodeReport cmd) {
     unschedule(requestTestNode)
 
-    if (logEnable) log.debug "PowerLevelTestNodeReport: ${cmd.toString()}"
+    if (logEnable) log.debug "PowerLevelTestNodeReport: ${cmd}"
 
     // Check test validity
-    if (cmd.testNodeid == 0)
-    {
-        sendEvent(name: "rangeTest", value: "none")
+    if (cmd.testNodeid == 0) {
+        logEvent("rangeTest", "none")
         return
     }
 
-    def Boolean inProgress = false
-    switch (cmd.statusOfOperation)
-    {
-        case 0:    // ZW_TEST_FAILED
+    Boolean complete = false
+    switch (cmd.statusOfOperation) {
+        case 0:
+            // Test failed
+            complete = true
             status = "failed"
             break
-        case 1:    // ZW_TEST_SUCCES
+        case 1:
+            // Test succeeeded
+            complete = true
             status = "succeeded"
             break
-        case 2:    // ZW_TEST_INPROGRESS
-            inProgress = true
+        case 2:
+            // Test in progress
             status = "in progress"
             break
     }
 
-    def map = [:]
-    map.name = "rangeTest"
-    map.value = "${status}"
-    map.descriptionText = "${device.displayName}: range test ${status}"
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
-
-    map.name = "rangeTestReceived"
-    map.value = "${cmd.testFrameCount}"
-    map.descriptionText = "${device.displayName}: received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}"
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
-
-    if (inProgress)
-    {
+    if (complete) {
+        logEvent("rangeTestReceived", "${cmd.testFrameCount}", "frames", "Received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}")
+        logEvent("rangeTest", status, null, "range test ${status}")
+    }
+    else {
+        logEvent("rangeTest", status, null, "range test ${status}")
+        logEvent("rangeTestReceived", "${cmd.testFrameCount}", "frames", "Received ${cmd.testFrameCount} frames from node ${cmd.testNodeid}")
         runIn(2, requestTestNode)
     }
 }
 
-void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd) {
     if (logEnable) log.debug "VersionReport: ${cmd}"
     device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
     device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
 }
 
-def zwaveEvent(hubitat.zwave.Command cmd)
-{
-    if (logEnable) log.debug "Unhandled cmd: ${cmd.toString()}"
-    return null
+void zwaveEvent(hubitat.zwave.Command cmd) {
+    log.warn "Unhandled cmd: ${cmd}"
 }

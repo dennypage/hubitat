@@ -62,16 +62,27 @@
 //                  Send events on refresh.
 // Version 2.1.0    Add Actuator capability to allow device to
 //                  appear in selection lists.
-// Version 2.1.1    Declare commandClassVersions
-//                  Add debug logging
+// Version 3.0.0    Code restructure and cleanup
 //
+
+// Supported Z-Wave Classes:
+//
+//     0x20 COMMAND_CLASS_BASIC
+//     0x25 COMMAND_CLASS_SWITCH_BINARY
+//     0x26 COMMAND_CLASS_SWITCH_MULTILEVEL
+//     0x2B COMMAND_CLASS_SCENE_ACTIVATION
+//     0x2C COMMAND_CLASS_SCENE_ACUTATOR_CONF
+//     0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC
+//     0x86 COMMAND_CLASS_VERSION
 
 import groovy.transform.Field
 
 metadata
 {
-    definition (
-        name: "Somfy ZRTSII Node", namespace: "cococafe", author: "Denny Page"
+    definition(
+        name: "Somfy ZRTSII Node", namespace: "cococafe", author: "Denny Page",
+        importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/zrtsii/somfy-rtsii-node.groovy",
+        singleThreaded: true
     )
     {
         capability "Actuator"
@@ -111,15 +122,6 @@ metadata
             inClusters: "0x2C,0x72,0x26,0x20,0x25,0x2B,0x86"
         fingerprint mfr: "0047", prod: "5A52", deviceId: "5410",
             inClusters: "0x2C,0x72,0x26,0x20,0x25,0x2B,0x86"
-
-        // All command classes are version 1
-        // 0x20 COMMAND_CLASS_BASIC
-        // 0x25 COMMAND_CLASS_SWITCH_BINARY
-        // 0x26 COMMAND_CLASS_SWITCH_MULTILEVEL
-        // 0x2B COMMAND_CLASS_SCENE_ACTIVATION
-        // 0x2C COMMAND_CLASS_SCENE_ACUTATOR_CONF
-        // 0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC
-        // 0x86 COMMAND_CLASS_VERSION
     }
 }
 
@@ -145,25 +147,22 @@ preferences
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
 }
 
-def installed()
-{
+void installed() {
     state.moveBegin = 0
     state.oldPosition = 0
     state.newPosition = 100
 }
 
-def refresh()
-{
-    def cmds = []
+void refresh() {
+    List<hubitat.zwave.Command> cmds = []
 
-    cmds.add(zwave.versionV1.versionGet().format())
-    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
-    cmds.add(zwave.switchMultilevelV1.switchMultilevelGet().format())
-    delayBetween(cmds, 200)
+    cmds.add(zwave.versionV1.versionGet())
+    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet())
+    cmds.add(zwave.switchMultilevelV1.switchMultilevelGet())
+    sendCmds(cmds)
 }
 
-def moveComplete(args)
-{
+void moveComplete(Map args) {
     if (logEnable) log.debug "moveComplete(${args})"
 
     if (!state.moveBegin) return
@@ -174,76 +173,67 @@ def moveComplete(args)
     if (args.sendStop) sendStopCommand()
 
     BigDecimal elapsed = now() - state.moveBegin
+    Integer delta = (elapsed / (travelTime.toBigDecimal() * 10.0))
     state.moveBegin = 0
 
-    Integer delta = (elapsed / (travelTime.toBigDecimal() * 10.0))
-    if (state.newPosition > state.oldPosition)
-    {
-        newPosition = Math.min(state.oldPosition.toInteger() + delta, (Integer) 100)
+    String status, position, description
+    if (state.newPosition > state.oldPosition) {
+        position = Math.min(state.oldPosition.toInteger() + delta, (Integer) 100)
     }
-    else
-    {
-        newPosition = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
+    else {
+        position = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
     }
 
-    if (newPosition == 0)
-    {
+    if (position == "0") {
         status = "closed"
+        description = "Shade is closed"
     }
-    else if (newPosition == 100)
-    {
+    else if (position == "100") {
         status = "open"
+        description = "Shade is open"
     }
-    else
-    {
+    else {
         status = "partially open"
+        description = "Shade is partially open (${position}%)"
     }
-    sendEvent(name: "windowShade", value: status)
-    sendEvent(name: "position", value: newPosition)
-
-    if (txtEnable) log.info "${device.displayName} is ${status} (${newPosition})"
+    logEvent("windowShade", status, null, description)
+    logEvent("position", position, "%")
 }
 
-def stop()
-{
+void stop() {
     if (logEnable) log.debug "stop()"
 
-    if (state.moveBegin)
-    {
+    if (state.moveBegin) {
         unschedule(moveComplete)
         moveComplete([sendStop: true])
         return
     }
-    else if (myPosition)
-    {
+    else if (myPosition) {
         setPosition(myPosition)
     }
-    else
-    {
+    else {
         sendStopCommand()
     }
 }
 
-def setPosition(BigDecimal position)
-{
+void setPosition(BigDecimal position) {
     Integer newPosition = position.toInteger()
     Boolean sendStop = false
     BigDecimal delta
 
     if (logEnable) log.debug "setPosition(${newPosition})"
 
-    if (newPosition > 100)
-    {
+    if (newPosition > 100) {
         newPosition = 100
     }
-    else if (newPosition < 0)
-    {
+    else if (newPosition < 0) {
         newPosition = 0
     }
 
-    if (state.moveBegin)
-    {
-        if (newPosition == state.newPosition) return
+    if (state.moveBegin) {
+        if (newPosition == state.newPosition) {
+            return
+        }
 
         // Stop and allow state update
         stop()
@@ -251,55 +241,45 @@ def setPosition(BigDecimal position)
     }
 
     Integer oldPosition = device.currentValue("position") ?: 0
-    if (newPosition == oldPosition)
-    {
+    if (newPosition == oldPosition) {
         // There is  the possibility that the shade has been changed
         // has been changed without our knowledge. For example if
         // we think the shade is closed but someone opened the shade
         // using a hand controller. So to help reduce confusion, even
         // if we think we are already fully open, closed, or at
         // myPosition, we send a command anyway.
-        if (newPosition == 0)
-        {
+        if (newPosition == 0) {
             sendStartCommand(false)
         }
-        else if (newPosition >= 100)
-        {
+        else if (newPosition >= 100) {
             sendStartCommand(true)
         }
-        else if (myPosition && newPosition == myPosition)
-        {
+        else if (myPosition && newPosition == myPosition) {
             sendStopCommand()
         }
         return
     }
 
-    if (newPosition > oldPosition)
-    {
+    if (newPosition > oldPosition) {
         delta = newPosition - oldPosition
     }
-    else
-    {
+    else {
         delta = oldPosition - newPosition
     }
     Long millis = travelTime.toBigDecimal() * 10.0 * delta
 
-    if (logEnable) log.debug "moving position from ${oldPosition} to ${newPosition} (${millis}ms)"
-
-    status = newPosition > oldPosition ? "opening" : "closing"
-    sendEvent(name: "windowShade", value: status)
-    if (txtEnable) log.info "${device.displayName} is ${status}"
+    if (logEnable) log.debug "Moving position from ${oldPosition} to ${newPosition} (${millis}ms)"
+    String status = newPosition > oldPosition ? "opening" : "closing"
+    logEvent("windowShade", status, null, "Shade is ${status}")
 
     state.oldPosition = oldPosition
     state.newPosition = newPosition
 
-    if (myPosition && newPosition == myPosition)
-    {
+    if (myPosition && newPosition == myPosition) {
         sendStopCommand()
     }
-    else
-    {
-        Boolean upDown = newPosition > oldPosition ? true : false
+    else {
+        Boolean upDown = newPosition > oldPosition
         if (newPosition > 0 && newPosition < 100) sendStop = true
         sendStartCommand(upDown)
     }
@@ -307,70 +287,78 @@ def setPosition(BigDecimal position)
     runInMillis(millis.toLong(), moveComplete, [data: [sendStop: sendStop]])
 }
 
-def open()
-{
+void open() {
     setPosition(100)
 }
 
-def close()
-{
+void close() {
     setPosition(0)
 }
 
-def parse(String description)
-{
-    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
-    if (cmd)
-    {
-        return zwaveEvent(cmd)
+void logEvent(String name, String value, String unit = null, String description = null, Boolean warn = false) {
+    Map map = [name: name, value: value]
+    if (unit) {
+        map.unit = unit
     }
+    if (description) {
+        map.descriptionText = description
+    }
+    sendEvent(map)
 
-    log.warn "Non Z-Wave parse event: ${description}"
-    return null
+    if (description) {
+        if (warn) {
+            log.warn description
+        }
+        else if (txtEnable) {
+            log.info description
+        }
+    }
 }
 
-def zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd)
-{
+void sendCmds(List<hubitat.zwave.Command> cmds, Long interval = 200) {
+    sendHubCommand(new hubitat.device.HubMultiAction(delayBetween(cmds*.format(), interval), hubitat.device.Protocol.ZWAVE))
+}
+
+void sendCmdCount(hubitat.zwave.Command cmd, Integer count = 1, Long interval = 1) {
+    List<hubitat.zwave.Command> cmds = []
+    count.times {
+        cmds.add(cmd)
+    }
+    sendCmds(cmds, interval)
+}
+
+void parse(String description) {
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
+    if (cmd) {
+        zwaveEvent(cmd)
+    }
+    else {
+        log.warn "Non Z-Wave parse event: ${description}"
+    }
+}
+
+void zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd) {
     if (logEnable) log.debug "VersionReport: ${cmd}"
-    return null
 }
 
-def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd) {
     if (logEnable) log.debug "Manufacturer Specific Report: ${cmd}"
-    return null
 }
 
-def zwaveEvent(hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelReport cmd)
-{
-    if (logEnable) log.debug "Switch multilevel report: ${cmd.toString()}"
-    sendEvent(name: "windowShade", value: device.currentValue("windowShade") ?: "unknown")
-    sendEvent(name: "position", value: device.currentValue("position") ?: 0)
-    return null
+void zwaveEvent(hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelReport cmd) {
+    if (logEnable) log.debug "Switch multilevel report: ${cmd}"
+    // NB: The value in the multilevel report is only 0 or 255, so we ignore it
 }
 
-def zwaveEvent(hubitat.zwave.Command cmd)
-{
-    log.warn "Unhandled cmd: ${cmd.toString()}"
-    return null
+void zwaveEvent(hubitat.zwave.Command cmd) {
+    log.warn "Unhandled cmd: ${cmd}"
 }
 
-private void sendCommand(hubitat.zwave.Command cmd)
-{
-    def hubAction = new hubitat.device.HubAction(cmd.format(), hubitat.device.Protocol.ZWAVE)
-
-    Integer limit = cmdCount.toInteger()
-    pauseExecution(1) // Yield
-    for (Integer i = 0; i < limit; i++) sendHubCommand(hubAction)
-}
-
-private void sendStartCommand(Boolean upDown)
-{
+private void sendStartCommand(Boolean upDown) {
     if (reverseMotor) upDown = !upDown
-    sendCommand(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStartLevelChange(upDown: upDown))
+    sendCmdCount(zwave.switchMultilevelV1.switchMultilevelStartLevelChange(upDown: upDown), cmdCount.toInteger())
 }
 
-private void sendStopCommand()
-{
-    sendCommand(new hubitat.zwave.commands.switchmultilevelv1.SwitchMultilevelStopLevelChange())
+private void sendStopCommand() {
+    sendCmdCount(zwave.switchMultilevelV1.switchMultilevelStopLevelChange(), cmdCount.toInteger())
 }

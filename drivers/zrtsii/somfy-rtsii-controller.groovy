@@ -38,25 +38,26 @@
 // Version 1.1.0    Unhandled events logged as warnings
 // Version 2.0.0    Add a refresh capability (node ping)
 // Version 2.0.1    Don't log on node ping
-// Version 2.0.2    Declare commandClassVersions
-//                  Add debug logging
+// Version 3.0.0    Code restructure and cleanup
 //
+
+// Supported Z-Wave Classes:
+//
+//     0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC
+//     0x86 COMMAND_CLASS_VERSION
 
 import groovy.transform.Field
 
 metadata
 {
-    definition (
-        name: "Somfy ZRTSII Controller", namespace: "cococafe", author: "Denny Page"
+    definition(
+        name: "Somfy ZRTSII Controller", namespace: "cococafe", author: "Denny Page",
+        importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/zrtsii/somfy-rtsii-controller.groovy",
     )
     {
         capability "Refresh"
 
         fingerprint mfr: "0047", prod: "5A52", deviceId: "5400", inClusters: "0x86,0x72"
-
-        // All command classes are version 1
-        // 0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC
-        // 0x86 COMMAND_CLASS_VERSION
     }
 }
 
@@ -67,41 +68,36 @@ preferences
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
 }
 
-def refresh()
-{
-    def cmds = []
+void refresh() {
+    List<hubitat.zwave.Command> cmds = []
 
-    cmds.add(zwave.versionV1.versionGet().format())
-    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet().format())
-    delayBetween(cmds, 200)
+    cmds.add(zwave.versionV1.versionGet())
+    cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet())
+    sendCmds(cmds)
 }
 
-def parse(String description)
-{
+void sendCmds(List<hubitat.zwave.Command> cmds, Long interval = 200) {
+    sendHubCommand(new hubitat.device.HubMultiAction(delayBetween(cmds*.format(), interval), hubitat.device.Protocol.ZWAVE))
+}
+
+void parse(String description) {
     hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
-    if (cmd)
-    {
-        return zwaveEvent(cmd)
+    if (cmd) {
+        zwaveEvent(cmd)
     }
-
-    log.warn "Non Z-Wave parse event: ${description}"
-    return null
+    else {
+        log.warn "Non Z-Wave parse event: ${description}"
+    }
 }
 
-def zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd) {
     if (logEnable) log.debug "VersionReport: ${cmd}"
-    return null
 }
 
-def zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd) {
     if (logEnable) log.debug "Manufacturer Specific Report: ${cmd}"
-    return null
 }
 
-def zwaveEvent(hubitat.zwave.Command cmd)
-{
-    log.warn "Unhandled cmd: ${cmd.toString()}"
-    return null
+void zwaveEvent(hubitat.zwave.Command cmd) {
+    log.warn "Unhandled cmd: ${cmd}"
 }

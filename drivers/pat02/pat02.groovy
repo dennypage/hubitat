@@ -45,15 +45,36 @@
 //                  events to properly handle auto reports
 // Version 2.1.1    Fix zero comparison that prevented disabling of various reports
 // Version 2.1.2    Revert explicit setting of isStateChange
-// Version 2.1.3    Declare commandClassVersions
+// Version 3.0.0    Code restructure and cleanup
 //
+
+// Supported Z-Wave Classes:
+//
+//     0x30 COMMAND_CLASS_SENSOR_BINARY_V2 (removed in newer firmware)
+//     0x31 COMMAND_CLASS_SENSOR_MULTILEVEL_V11 (older firmware is V5)
+//     0x59 COMMAND_CLASS_ASSOCIATION_GRP_INFO
+//     0x5A COMMAND_CLASS_DEVICE_RESET_LOCALLY
+//     0x5E COMMAND_CLASS_ZWAVEPLUS_INFO_V2
+//     0x70 COMMAND_CLASS_CONFIGURATION
+//     0x71 COMMAND_CLASS_NOTIFICATION_V8 (older firmware is V4)
+//     0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
+//     0x73 COMMAND_CLASS_POWERLEVEL
+//     0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2
+//     0x80 COMMAND_CLASS_BATTERY
+//     0x84 COMMAND_CLASS_WAKE_UP_V2
+//     0x85 COMMAND_CLASS_ASSOCIATION_V2
+//     0x86 COMMAND_CLASS_VERSION_V3 (older firmware is V2)
+//     0x8F COMMAND_CLASS_MULTI_CMD
+//     0x98 COMMAND_CLASS_SECURITY
+//     0x9F COMMAND_CLASS_SECURITY_2 (only in newer firmware)
 
 import groovy.transform.Field
 
 metadata
 {
-    definition (
-        name: "Philio PAT02", namespace: "cococafe", author: "Denny Page"
+    definition(
+        name: "Philio PAT02", namespace: "cococafe", author: "Denny Page",
+        importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/pat02/pat02.groovy"
     )
     {
         capability "TemperatureMeasurement"
@@ -71,71 +92,60 @@ metadata
         fingerprint mfr: "013C", prod: "0002", deviceId: "0020" // PAT02-B
         fingerprint mfr: "013C", prod: "0002", deviceId: "0021" // PAT02-C
         fingerprint mfr: "013C", prod: "0002", deviceId: "002B" // PAT02-B-NS (No Security)
-
-        // 0x30 COMMAND_CLASS_SENSOR_BINARY_V2 (removed in newer firmware)
-        // 0x31 COMMAND_CLASS_SENSOR_MULTILEVEL_V11 (older firmware is V5)
-        // 0x59 COMMAND_CLASS_ASSOCIATION_GRP_INFO
-        // 0x5A COMMAND_CLASS_DEVICE_RESET_LOCALLY
-        // 0x5E COMMAND_CLASS_ZWAVEPLUS_INFO_V2
-        // 0x70 COMMAND_CLASS_CONFIGURATION
-        // 0x71 COMMAND_CLASS_NOTIFICATION_V8 (older firmware is V4)
-        // 0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
-        // 0x73 COMMAND_CLASS_POWERLEVEL
-        // 0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V2
-        // 0x80 COMMAND_CLASS_BATTERY
-        // 0x84 COMMAND_CLASS_WAKE_UP_V2
-        // 0x85 COMMAND_CLASS_ASSOCIATION_V2
-        // 0x86 COMMAND_CLASS_VERSION_V3 (older firmware is V2)
-        // 0x8F COMMAND_CLASS_MULTI_CMD
-        // 0x98 COMMAND_CLASS_SECURITY
-        // 0x9F COMMAND_CLASS_SECURITY_2 (only in newer firmware)
     }
 }
 
-@Field static final Map commandClassVersions = [0x30:2, 0x31:11, 0x70:1, 0x71:8, 0x80:1, 0x84:2, 0x86:3, 0x98:1]
+@Field static final Map commandClassVersions = [0x30:2, 0x31:11, 0x70:1, 0x71:8, 0x80:1, 0x84:2, 0x86:3, 0x8F:1, 0x98:1]
+
+@Field static final Map<Integer,Map> deviceParamaters = [
+    // Device values noted for reference, but not configurable by this driver
+    // Temperature Scale: Parameter 5 bit 3 - 0: Fahrenheit [default], 1: Celsius
+    // Notification Type: Parameter 7 bit 4 - 0: Notification Report [default], 1: Sensor Binary Report
+    //                                           NB: Newer firmware no longer supports Sensor Binary Report
+    // Disable Multi CC:  Parameter 7 bit 5 - 0: Enable Mulit CC in Auto report [default], 1: Disable Multi CC
+
+    // Temperature differential report: Parameter 21, Range 0-127, default 1, units of degrees Fahrenheit
+    21: [name: "temperatureDifferential", title: "Temperature differential report",
+        type: "number", defaultValue: "1", range: "0..127",
+        description: "0 disables differential reporting"],
+
+    // Humidity differential report: Parameter 23, Range 0-60, default 5, units of percent RH%
+    23: [name: "humidityDifferential", title: "Humidity differential report",
+        type: "number", defaultValue: "5", range: "0..60",
+        description: "0 disables differential reporting"],
+
+    // Auto Report Tick interval: Parameter 20, Range 0-255, default 30, units of minutes. 0 disables all auto reporting.
+    20: [name: "tickInterval", title: "Auto Report Tick minutes",
+       type: "number", defaultValue: "30", range: "0..255",
+        description: "0 disables ALL auto reporting"],
+
+    // Auto Report Battery interval: Parameter 10, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
+    10: [name: "batteryInterval", title: "Battery Auto Report Ticks",
+        type: "number", defaultValue: "12", range: "0..127",
+        description: "0 disables auto reporting"],
+
+    // Auto Report Temperature interval: Parameter 13, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
+    13: [name: "temperatureInterval", title: "Temperature Auto Report Ticks",
+        type: "number", defaultValue: "12", range: "0..127",
+        description: "0 disables auto reporting"],
+
+    // Auto Report Humidity interval: Parameter 14, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
+    14: [name: "humidityInterval", title: "Humidity Auto Report Ticks",
+        type: "number", defaultValue: "12", range: "0..127",
+        description: "0 disables auto reporting"],
+
+    // Auto Report Water interval: Parameter 15, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
+    15: [name: "waterInterval", title: "Water Auto Report Ticks",
+        type: "number", defaultValue: "12", range: "0..127",
+        description: "0 disables auto reporting"]
+]
 
 preferences
 {
-    // Device values noted for reference, but not configurable by this driver
-    // Temperature Scale: Parameter 5 bit 3 (0: Fahrenheit [default], 1: Celsius)
-    // Notification Type: Parameter 7 bit 4 (0: Notification Report [default], 1: Sensor Binary Report)
-    //                                      (NB: Newer firmware no longer supports Sensor Binary Report)
-    // Disable Multi CC: Parameter 7 bit 5 (0: Enable Mulit CC in Auto report [default], 1: Disable Multi CC)
-
-    // Temperature differential report: Parameter 21, Range 0-127, default 1, units of degrees Fahrenheit
-    input name: "temperatureDifferential", title: "Temperature differential report",
-        description: "0 disables differential reporting",
-        type: "number", defaultValue: "1", range: "0..127"
-
-    // Humidity differential report: Parameter 23, Range 0-60, default 5, units of percent RH%
-    input name: "humidityDifferential", title: "Humidity differential report",
-        description: "0 disables differential reporting",
-        type: "number", defaultValue: "5", range: "0..60"
-
-    // Auto Report Tick interval: Parameter 20, Range 0-255, default 30, units of minutes. 0 disables all auto reporting.
-    input name: "tickInterval", title: "Auto Report Tick minutes",
-        description: "0 disables ALL auto reporting",
-        type: "number", defaultValue: "30", range: "0..255"
-
-    // Auto Report Battery interval: Parameter 10, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
-    input name: "batteryInterval", title: "Battery Auto Report Ticks",
-        description: "0 disables auto reporting",
-        type: "number", defaultValue: "12", range: "0..127"
-
-    // Auto Report Temperature interval: Parameter 13, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
-    input name: "temperatureInterval", title: "Temperature Auto Report Ticks",
-        description: "0 disables auto reporting",
-        type: "number", defaultValue: "12", range: "0..127"
-
-    // Auto Report Humidity interval: Parameter 14, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
-    input name: "humidityInterval", title: "Humidity Auto Report Ticks",
-        description: "0 disables auto reporting",
-        type: "number", defaultValue: "12", range: "0..127"
-
-    // Auto Report Water interval: Parameter 15, Range 0-127, default 12, units of Ticks. 0 disables auto reporting.
-    input name: "waterInterval", title: "Water Auto Report Ticks",
-        description: "0 disables auto reporting",
-        type: "number", defaultValue: "12", range: "0..127"
+    // Configurable device parameters
+    deviceParamaters.each { parameter, map ->
+        input map
+    }
 
     // Wakeup Interval: Number of minutes between wakeups
     input name: "wakeUpInterval", title: "Wakeup interval minutes",
@@ -153,8 +163,68 @@ preferences
     input name: "txtEnable", title: "Enable descriptionText logging", type: "bool", defaultValue: true
 }
 
-def deviceSync()
-{
+void installed() {
+    state.pendingResync = true
+    state.pendingRefresh = true
+    runIn(1, deviceSync)
+    runIn(1800, logsOff)
+}
+
+void updated() {
+    if (logEnable) log.debug "Updated preferences"
+
+    // Validate parameter numbers
+    Integer value
+    deviceParamaters.each { parameter, map ->
+        if (settings[map.name] != null) {
+            value = settings[map.name].toBigDecimal()
+            if (value != settings[map.name]) {
+                log.warn "${map.title} must be an integer: value changed from ${settings[map.name]} to ${value}"
+                device.updateSetting("${map.name}", value)
+            }
+        }
+    }
+
+    // Validate wakeup interval
+    if (wakeUpInterval) {
+        value = wakeUpInterval.toBigDecimal()
+        if (value < 30) {
+            value = 30
+        }
+        else if (value > 7200) {
+            value = 7200
+        }
+        else {
+            Integer r = value % 30
+            if (r) {
+                value += 30 - r
+            }
+        }
+        if (value != wakeUpInterval) {
+            log.warn "Wakeup interval must be an integer multiple of 30 between 30 and 7200: ${wakeUpInterval} changed to ${value}"
+            device.updateSetting("wakeUpInterval", value)
+        }
+    }
+
+    log.warn "Debug logging is ${logEnable}"
+    log.warn "Description logging is ${txtEnable}"
+}
+
+void configure() {
+    state.pendingResync = true
+    log.warn "Configuration will resync when device wakes up"
+}
+
+void refresh() {
+    state.pendingRefresh = true
+    log.warn "Data will refresh when device wakes up"
+}
+
+void clearTamper() {
+    logEvent("tamper", "clear", null, "Tamper cleared")
+}
+
+void deviceSync() {
     resync = state.pendingResync
     refresh = state.pendingRefresh
 
@@ -163,440 +233,211 @@ def deviceSync()
 
     if (logEnable) log.debug "deviceSync: pendingResync ${resync}, pendingRefresh ${refresh}"
 
-    def cmds = []
-    if (resync)
-    {
-        cmds.add(zwaveSecureEncap(zwave.versionV3.versionGet()))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 7)))
+    List<hubitat.zwave.Command> cmds = []
+    if (resync) {
+        cmds.add(zwave.versionV3.versionGet())
+        cmds.add(zwave.configurationV1.configurationGet(parameterNumber: 7))
     }
 
-    value = (temperatureDifferential != null) ? temperatureDifferential.toInteger() : 1
-    if (resync || state.temperatureDifferential != value)
-    {
-        log.warn "Updating device temperatureDifferential: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 21, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 21)))
-    }
-
-    value = (humidityDifferential != null) ? humidityDifferential.toInteger() : 5
-    if (resync || state.humidityDifferential != value)
-    {
-        log.warn "Updating device humidityDifferential: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 23, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 23)))
-    }
-
-    value = (tickInterval != null) ? tickInterval.toInteger() : 30
-    if (resync || state.tickInterval != value)
-    {
-        log.warn "Updating device tickInterval: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 20, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 20)))
-    }
-
-    value = (batteryInterval != null) ? batteryInterval.toInteger() : 12
-    if (resync || state.batteryInterval != value)
-    {
-        log.warn "Updating device batteryInterval: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 10, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 10)))
-    }
-
-    value = (temperatureInterval != null) ? temperatureInterval.toInteger() : 12
-    if (resync || state.temperatureInterval != value)
-    {
-        log.warn "Updating device temperatureInterval: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 13, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 13)))
-    }
-
-    value = (humidityInterval != null) ? humidityInterval.toInteger() : 12
-    if (resync || state.humidityInterval != value)
-    {
-        log.warn "Updating device humidityInterval: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 14, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 14)))
-    }
-
-    value = (waterInterval != null) ? waterInterval.toInteger() : 12
-    if (resync || state.waterInterval != value)
-    {
-        log.warn "Updating device waterInterval: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: 15, size: 1)))
-        cmds.add(zwaveSecureEncap(zwave.configurationV1.configurationGet(parameterNumber: 15)))
-    }
+    deviceParamaters.each { parameter, map ->
+        value = (settings[map.name] != null) ? settings[map.name].toInteger() : map.defaultValue.toInteger()
+        if (resync || state[map.name] != value) {
+            log.warn "Updating device ${map.name}: ${value}"
+            cmds.add(zwave.configurationV1.configurationSet(scaledConfigurationValue: value, parameterNumber: parameter, size: 1))
+            cmds.add(zwave.configurationV1.configurationGet(parameterNumber: parameter))
+        }
+   }
 
     value = (wakeUpInterval != null) ? wakeUpInterval.toInteger() : 1440
-    if (resync || state.wakeUpInterval != value)
-    {
+    if (resync || state.wakeUpInterval != value) {
         log.warn "Updating device wakeUpInterval: ${value}"
-        cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value * 60, nodeid: zwaveHubNodeId)))
-        cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpIntervalGet()))
+        cmds.add(zwave.wakeUpV2.wakeUpIntervalSet(seconds: value * 60, nodeid: zwaveHubNodeId))
+        cmds.add(zwave.wakeUpV2.wakeUpIntervalGet())
     }
 
-    if (refresh)
-    {
-        cmds.add(zwaveSecureEncap(zwave.batteryV1.batteryGet()))
-        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV11.sensorMultilevelGet(sensorType: 1)))
-        cmds.add(zwaveSecureEncap(zwave.sensorMultilevelV11.sensorMultilevelGet(sensorType: 5)))
-        cmds.add(zwaveSecureEncap(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0, event: 0)))
-        cmds.add(zwaveSecureEncap(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0, event: 2)))
-        cmds.add(zwaveSecureEncap(zwave.sensorBinaryV2.sensorBinaryGet(sensorType: 6)))
+    if (refresh) {
+        cmds.add(zwave.batteryV1.batteryGet())
+        cmds.add(zwave.sensorMultilevelV11.sensorMultilevelGet(sensorType: 1))
+        cmds.add(zwave.sensorMultilevelV11.sensorMultilevelGet(sensorType: 5))
+        cmds.add(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0, event: 0))
+        cmds.add(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0, event: 2))
+        cmds.add(zwave.sensorBinaryV2.sensorBinaryGet(sensorType: 6))
     }
 
-    cmds.add(zwaveSecureEncap(zwave.wakeUpV2.wakeUpNoMoreInformation()))
-    delayBetween(cmds, 250)
+    cmds.add(zwave.wakeUpV2.wakeUpNoMoreInformation())
+    sendCmds(cmds)
 }
 
-void logsOff()
-{
+void logsOff() {
     device.updateSetting("logEnable", [value:"false", type:"bool"])
-    log.warn "debug logging disabled"
+    log.warn "Debug logging disabled"
 }
 
-void installed()
-{
-    state.pendingResync = true
-    state.pendingRefresh = true
-    runIn(1, deviceSync)
-    runIn(1800, logsOff)
-}
-
-void updated()
-{
-    if (logEnable) log.debug "Updated preferences"
-
-    Integer value
-
-    // Validate numbers in preferences
-    if (temperatureDifferential)
-    {
-        value = temperatureDifferential.toBigDecimal()
-        if (value != temperatureDifferential)
-        {
-            log.warn "temperatureDifferential must be an integer: ${temperatureDifferential} changed to ${value}"
-            device.updateSetting("temperatureDifferential", value)
-        }
+void logEvent(String name, String value, String unit = null, String description = null, Boolean warn = false) {
+    Map map = [name: name, value: value]
+    if (unit) {
+        map.unit = unit
     }
-    if (humidityDifferential)
-    {
-        value = humidityDifferential.toBigDecimal()
-        if (value != humidityDifferential)
-        {
-            log.warn "humidityDifferential must be an integer: ${humidityDifferential} changed to ${value}"
-            device.updateSetting("humidityDifferential", value)
-        }
+    if (description) {
+        map.descriptionText = description
     }
-    if (tickInterval)
-    {
-        value = tickInterval.toBigDecimal()
-        if (value != tickInterval)
-        {
-            log.warn "tickInterval must be an integer: ${tickInterval} changed to ${value}"
-            device.updateSetting("tickInterval", value)
-        }
-    }
-    if (batteryInterval)
-    {
-        value = batteryInterval.toBigDecimal()
-        if (value != batteryInterval)
-        {
-            log.warn "batteryInterval must be an integer: ${batteryInterval} changed to ${value}"
-            device.updateSetting("batteryInterval", value)
-        }
-    }
-    if (temperatureInterval)
-    {
-        value = temperatureInterval.toBigDecimal()
-        if (value != temperatureInterval)
-        {
-            log.warn "temperatureInterval must be an integer: ${temperatureInterval} changed to ${value}"
-            device.updateSetting("temperatureInterval", value)
-        }
-    }
-    if (humidityInterval)
-    {
-        value = humidityInterval.toBigDecimal()
-        if (value != humidityInterval)
-        {
-            log.warn "humidityInterval must be an integer: ${humidityInterval} changed to ${value}"
-            device.updateSetting("humidityInterval", value)
-        }
-    }
-    if (waterInterval)
-    {
-        value = waterInterval.toBigDecimal()
-        if (value != waterInterval)
-        {
-            log.warn "waterInterval must be an integer: ${waterInterval} changed to ${value}"
-            device.updateSetting("waterInterval", value)
-        }
-    }
-    if (wakeUpInterval)
-    {
-        value = wakeUpInterval.toBigDecimal()
-        if (value < 30)
-        {
-            value = 30
-        }
-        else if (value > 7200)
-        {
-            value = 7200
-        }
-        else
-        {
-            Integer r = value % 30
-            if (r)
-            {
-                value += 30 - r
-            }
-        }
-        if (value != wakeUpInterval)
-        {
-            log.warn "wakeUpInterval must be an integer multiple of 30 between 30 and 7200: ${wakeUpInterval} changed to ${value}"
-            device.updateSetting("wakeUpInterval", value)
-        }
-    }
-
-    log.warn "debug logging is ${logEnable}"
-    log.warn "description logging is ${txtEnable}"
-}
-
-def configure()
-{
-    state.pendingResync = true
-    log.warn "Configuration will resync when device wakes up"
-}
-
-def refresh()
-{
-    state.pendingRefresh = true
-    log.warn "Data will refresh when device wakes up"
-}
-
-def clearTamper()
-{
-    def map = [:]
-    map.name = "tamper"
-    map.value = "clear"
-    map.descriptionText = "${device.displayName}: tamper cleared"
     sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
-}
 
-def parse(String description)
-{
-    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
-    if (cmd)
-    {
-        return zwaveEvent(cmd)
+    if (description) {
+        if (warn) {
+            log.warn description
+        }
+        else if (txtEnable) {
+            log.info description
+        }
     }
-
-    log.warn "Non Z-Wave parse event: ${description}"
-    return null
 }
 
-def zwaveEvent(hubitat.zwave.commands.sensormultilevelv11.SensorMultilevelReport cmd)
-{
-    def map = [:]
+void sendCmd(hubitat.zwave.Command cmd) {
+    sendHubCommand(new hubitat.device.HubAction(zwaveSecureEncap(cmd.format()), hubitat.device.Protocol.ZWAVE))
+}
 
-    if (logEnable) log.debug "SensorMultilevelReport: ${cmd.toString()}"
+void sendCmds(List<hubitat.zwave.Command> cmds, Long interval = 200) {
+    sendHubCommand(new hubitat.device.HubMultiAction(delayBetween(cmds.collect { cmd -> zwaveSecureEncap(cmd) }, interval), hubitat.device.Protocol.ZWAVE))
+}
 
-    switch (cmd.sensorType)
-    {
+void parse(String description) {
+    hubitat.zwave.Command cmd = zwave.parse(description, commandClassVersions)
+    if (cmd) {
+        zwaveEvent(cmd)
+    }
+    else {
+        log.warn "Non Z-Wave parse event: ${description}"
+    }
+}
+
+void zwaveEvent(hubitat.zwave.commands.multicmdv1.MultiCmdEncap cmd) {
+    if (logEnable) log.debug "MultiCmdEncap: ${cmd}"
+
+    cmd.encapsulatedCommands(commandClassVersions).each { encapsulatedCommand ->
+        zwaveEvent(encapsulatedCommand)
+    }
+}
+
+void zwaveEvent(hubitat.zwave.commands.sensormultilevelv11.SensorMultilevelReport cmd) {
+    if (logEnable) log.debug "SensorMultilevelReport: ${cmd}"
+
+    String value, newValue, unit
+    switch (cmd.sensorType) {
         case 1: // temperature
-            def value = cmd.scaledSensorValue
-            def precision = cmd.precision
-            def unit = cmd.scale == 1 ? "F" : "C"
-
-            map.name = "temperature"
-            map.value = convertTemperatureIfNeeded(value, unit, precision)
-            map.unit = getTemperatureScale()
-            if (logEnable) log.debug "${device.displayName} temperature sensor value is ${value}°${unit} (${map.value}°${map.unit})"
-
-            if (temperatureOffset)
-            {
-                map.value = (map.value.toBigDecimal() + temperatureOffset.toBigDecimal()).toString()
-                if (logEnable) log.debug "${device.displayName} adjusted temperature by ${temperatureOffset} to ${map.value}°${map.unit}"
+            value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmd.scale == 1 ? "F" : "C", cmd.precision)
+            unit = getTemperatureScale()
+            if (temperatureOffset) {
+                newValue = (value.toBigDecimal() + temperatureOffset.toBigDecimal())
+                if (logEnable) log.debug "Adjusting temperature by ${temperatureOffset}°${unit} from ${value}°${unit} to ${newValue}°${unit}"
+                value = newValue
             }
-            map.descriptionText = "${device.displayName}: temperature is ${map.value}°${map.unit}"
+            logEvent("temperature", value, unit, "Temperature is ${value}°${unit}")
             break
 
         case 5: // humidity
             value = cmd.scaledSensorValue
-
-            map.name = "humidity"
-            map.value = value
-            map.unit = "%"
-            if (logEnable) log.debug "${device.displayName} humidity sensor value is ${map.value}${map.unit}"
-
-            if (humidityOffset)
-            {
-                map.value = (map.value.toBigDecimal() + humidityOffset.toBigDecimal()).toString()
-                if (logEnable) log.debug "${device.displayName} adjusted humidity by ${humidityOffset} to ${map.value}${map.unit}"
+            if (humidityOffset) {
+                newValue = (value.toBigDecimal() + humidityOffset.toBigDecimal())
+                if (logEnable) log.debug "Adjusting humidity by ${humidityOffset}% from ${value}% to ${newValue}%"
+                value = newValue
             }
-            map.descriptionText = "${device.displayName}: humidity is ${map.value}${map.unit}"
+            logEvent("humidity", value, "%", "Humidity is ${value}%")
             break
 
         default:
-            if (logEnable) log.debug "Unknown SensorMultilevelReport: ${cmd.toString()}"
-            return null
-            break
+            log.warn "Unknown SensorMultilevelReport: ${cmd}"
     }
-
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
 }
 
-def zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd)
-{
-    def map = [:]
+void zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd) {
+    if (logEnable) log.debug "BatteryReport: ${cmd}"
 
-    if (logEnable) log.debug "BatteryReport: ${cmd.toString()}"
-
-    def batteryLevel = cmd.batteryLevel
-    if (batteryLevel == 0xFF)
-    {
-        log.warn "${device.displayName} low battery"
-        batteryLevel = 1
+    if (cmd.batteryLevel == 0xFF) {
+        logEvent("battery", "0", "%", "Battery is critically low", true)
     }
-
-    map.name = "battery"
-    map.value = batteryLevel
-    map.unit = "%"
-    map.descriptionText = "${device.displayName}: battery is ${map.value}${map.unit}"
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
+    else {
+        logEvent("battery", "${cmd.batteryLevel}", "%", "Battery is ${cmd.batteryLevel}%")
+    }
 }
 
-def zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd)
-{
-    def map = [:]
+void zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd) {
+    if (logEnable) log.debug "NotificationReport: ${cmd}"
 
-    if (logEnable) log.debug "NotificationReport: ${cmd.toString()}"
-
-    switch (cmd.notificationType)
-    {
+    switch (cmd.notificationType) {
         case 5: // water
-            map.name = "water"
-            map.value = cmd.event ? "wet" : "dry"
-            map.descriptionText = "${device.displayName}: sensor is ${map.value}"
+            String value = cmd.event ? "wet" : "dry"
+            logEvent("water", value, null, "Sensor is ${value}")
             break
         case 7: // tamper
-            map.name = "tamper"
-            map.value = "detected"
-            map.descriptionText = "${device.displayName}: tamper detected"
+            logEvent("tamper", "detected", null, "Tamper detected", true)
             break
         default:
-            if (logEnable) log.debug "Unknown NotificationReport: ${cmd.toString()}"
-            return null
-            break
+            log.warn "Unknown NotificationReport: ${cmd}"
     }
-
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
 }
 
-def zwaveEvent(hubitat.zwave.commands.sensorbinaryv2.SensorBinaryReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.sensorbinaryv2.SensorBinaryReport cmd) {
     // NB: Older firmware versions may send SensorBinaryReport instead of NotificationReport
+    if (logEnable) log.debug "SensorBinaryReport: ${cmd}"
 
-    def map = [:]
-
-    if (logEnable) log.debug "SensorBinaryReport: ${cmd.toString()}"
-
-    switch (cmd.sensorType)
-    {
+    switch (cmd.sensorType) {
         case 6: // water
-            map.name = "water"
-            map.value = cmd.sensorValue ? "wet" : "dry"
-            map.descriptionText = "${device.displayName}: sensor is ${map.value}"
+            String value = cmd.sensorValue ? "wet" : "dry"
+            logEvent("water", value, null, "Sensor is ${value}")
             break
         case 8: // tamper
-            map.name = "tamper"
-            map.value = "detected"
-            map.descriptionText = "${device.displayName}: tamper detected"
+            logEvent("tamper", "detected", null, "Tamper detected", true)
             break
         default:
-            if (logEnable) log.debug "Unknown SensorBinaryReport: ${cmd.toString()}"
-            return null
-            break
-    }
-
-    sendEvent(map)
-    if (txtEnable) log.info "${map.descriptionText}"
-}
-
-def zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd)
-{
-    if (logEnable) log.debug "ConfigurationReport: ${cmd.toString()}"
-
-    switch (cmd.parameterNumber)
-    {
-        case 7:
-            def value = cmd.configurationValue[0]
-            if (value) log.warn "${device.displayName}: Parameter 7 set to ${value} (factory default is 0)"
-            break
-        case 10: // Auto Report Battery interval
-            state.batteryInterval = cmd.configurationValue[0]
-            break
-        case 13: // Auto Report Temperature interval
-            state.temperatureInterval = cmd.configurationValue[0]
-            break
-        case 14: // Auto Report Humidity interval
-            state.humidityInterval = cmd.configurationValue[0]
-            break
-        case 15: // Auto Report Water interval
-            state.waterInterval = cmd.configurationValue[0]
-            break
-        case 20: // Auto Report tick interval
-            state.tickInterval = cmd.configurationValue[0]
-            break
-        case 21: // Temperature Differential Report
-            state.temperatureDifferential = cmd.configurationValue[0]
-            break
-        case 23: // Humidity Differential Report
-            state.humidityDifferential = cmd.configurationValue[0]
-            break
-        default:
-            if (logEnable) log.debug "Unknown Configuration Report Received ConfigurationReport: ${cmd.toString()}"
+            log.warn "Unknown SensorBinaryReport: ${cmd}"
     }
 }
 
-def zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpIntervalReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd) {
+    if (logEnable) log.debug "ConfigurationReport: ${cmd}"
+
+    Integer parameterNumber = cmd.parameterNumber
+    Map map = deviceParamaters[parameterNumber]
+    if (map) {
+        state[map.name] = cmd.configurationValue[0]
+    }
+    else if (parameterNumber == 7) {
+        Short value = cmd.configurationValue[0]
+        if (value) log.warn "Parameter 7 (custom functions) set to ${value} (factory default is 0)"
+    }
+    else {
+        log.warn "Unknown Configuration Report Received ConfigurationReport: ${cmd}"
+    }
+}
+
+void zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpIntervalReport cmd) {
     state.wakeUpInterval = cmd.seconds / 60
-    if (logEnable) log.debug "${device.displayName} wakup interval ${state.wakeUpInterval} minutes"
+    if (logEnable) log.debug "Wakup interval ${state.wakeUpInterval} minutes"
 }
 
-def zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpNotification cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpNotification cmd) {
     if (logEnable) log.debug "Received WakeUpNotification"
     runInMillis(200, deviceSync)
 }
 
-void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd)
-{
+void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd) {
     if (logEnable) log.debug "VersionReport: ${cmd}"
     device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
     device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
 }
 
-def zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd)
-{
-    encapCmd = cmd.encapsulatedCommand()
-    if (encapCmd)
-    {
-        return zwaveEvent(encapCmd)
+void zwaveEvent(hubitat.zwave.commands.securityv1.SecurityMessageEncapsulation cmd) {
+    encapCmd = cmd.encapsulatedCommand(commandClassVersions)
+    if (encapCmd) {
+        zwaveEvent(encapCmd)
     }
-
-    log.warn "Unable to extract encapsulated cmd: ${cmd.toString()}"
-    return null
+    else {
+        log.warn "Unable to extract encapsulated cmd: ${cmd}"
+    }
 }
 
-def zwaveEvent(hubitat.zwave.Command cmd)
-{
-    log.warn "Unhandled cmd: ${cmd.toString()}"
-    return null
+void zwaveEvent(hubitat.zwave.Command cmd) {
+    log.warn "Unhandled cmd: ${cmd}"
 }

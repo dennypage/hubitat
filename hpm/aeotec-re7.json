@@ -2,9 +2,9 @@
   "packageName": "Aeotec Range Extender 7",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.4.0",
-  "dateReleased": "2020-11-27",
-  "releaseNotes": "1.4.0 Normalize logging\n1.3.1 Mark power test seconds required\n1.3.0 Use zWaveSecureEncap",
+  "version": "2.0.0",
+  "dateReleased": "2023-04-01",
+  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.4.0 Normalize logging\n1.3.1 Mark power test seconds required\n1.3.0 Use zWaveSecureEncap",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/aeotec-re7",
   "communityLink": "https://community.hubitat.com/t/release-aeotec-range-extender-7/45303",
   "drivers": [

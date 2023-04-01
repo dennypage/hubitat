@@ -2,9 +2,9 @@
   "packageName": "WeeWX (weather station) to Hubitat driver",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.1.0",
-  "dateReleased": "2020-10-01",
-  "releaseNotes": "1.1.0 Remove usUnits attribute\n1.0.0 Initial release",
+  "version": "1.2.0",
+  "dateReleased": "2023-04-01",
+  "releaseNotes": "1.2.0 Code restructure and cleanup\n1.1.0 Remove usUnits attribute\n1.0.0 Initial release",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/weewx",
   "communityLink": "https://community.hubitat.com/t/release-weewx-weather-station-to-hubitat-driver/44866",
   "drivers": [

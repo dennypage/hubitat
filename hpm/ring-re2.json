@@ -2,9 +2,9 @@
   "packageName": "Ring Alarm Range Extender gen2",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.3.0",
-  "dateReleased": "2022-04-21",
-  "releaseNotes": "1.3.0 Add Initialize capability to cover PowerSource changes while hub not running",
+  "version": "2.0.0",
+  "dateReleased": "2023-04-01",
+  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.3.0 Add Initialize capability to cover PowerSource changes while hub not running",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/ring-re2",
   "communityLink": "https://community.hubitat.com/t/release-ring-alarm-range-extender-gen2-driver/52151",
   "drivers": [

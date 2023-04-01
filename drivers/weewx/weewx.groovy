@@ -27,11 +27,12 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Remove usUnits attribute (leftover from testing)
+// Version 1.2.0    Code restructure and cleanup
 //
 
 metadata
 {
-    definition (
+    definition(
         name: "WeeWX", namespace: "cococafe", author: "Denny Page"
     )
     {
@@ -72,56 +73,48 @@ preferences
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: true
 }
 
-def configure()
-{
+void configure() {
     state.hubURL = "http://${device.hub.getDataValue("localIP")}:${device.hub.getDataValue("localSrvPortTCP")}"
     log.info "Hub URL is ${state.hubURL}"
 }
 
-void logsOff()
-{
+void logsOff() {
     device.updateSetting("logEnable", [value:"false", type:"bool"])
     log.warn "debug logging disabled"
 }
 
-void installed()
-{
+void installed() {
     configure()
     runIn(1800, logsOff)
 }
 
-void updated()
-{
+void updated() {
     if (logEnable) log.debug "Updated preferences"
     log.warn "debug logging is ${logEnable}"
 
     boolean validIPv4 = weewxIpAddress.matches("(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)")
-    if (! validIPv4)
-    {
+    if (!validIPv4) {
         log.error "Invalid IPv4 address for WeeWX server"
         return
     }
 
-    weewxNetID = weewxIpAddress.tokenize( '.' ).collect { String.format('%02X', it.toInteger()) }.join()
+    weewxNetID = weewxIpAddress.tokenize( '.' ).collect { octet -> String.format('%02X', octet.toInteger()) }.join()
     log.info "WeeWX Device Network ID is ${weewxNetID}"
     device.setDeviceNetworkId("${weewxNetID}")
 
     configure()
 }
 
-void parse(String description)
-{
+void parse(String description) {
     if (logEnable) log.debug "parse: ${description}"
 
-    def msg = parseLanMessage(description)
+    Map msg = parseLanMessage(description)
     if (logEnable) log.debug "msg: ${msg}"
 
     json = parseJson(msg.body)
-    if (json)
-    {
-        json.each
-        {
-            key, value -> sendEvent(name: "${key}", value: "${value}")
+    if (json) {
+        json.each { key, value ->
+            sendEvent(name: "${key}", value: "${value}")
         }
     }
 }

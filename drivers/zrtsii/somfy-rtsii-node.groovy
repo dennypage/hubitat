@@ -162,42 +162,12 @@ void refresh() {
     sendCmds(cmds)
 }
 
-void moveComplete(Map args) {
-    if (logEnable) log.debug "moveComplete(${args})"
+void open() {
+    setPosition(100)
+}
 
-    if (!state.moveBegin) return
-
-    // Note that we do not send a stop command if we are moving to either
-    // fully open or fully closed. This helps address the natural errors
-    // that occur when using time based estimates of position.
-    if (args.sendStop) sendStopCommand()
-
-    BigDecimal elapsed = now() - state.moveBegin
-    Integer delta = (elapsed / (travelTime.toBigDecimal() * 10.0))
-    state.moveBegin = 0
-
-    String status, position, description
-    if (state.newPosition > state.oldPosition) {
-        position = Math.min(state.oldPosition.toInteger() + delta, (Integer) 100)
-    }
-    else {
-        position = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
-    }
-
-    if (position == "0") {
-        status = "closed"
-        description = "Shade is closed"
-    }
-    else if (position == "100") {
-        status = "open"
-        description = "Shade is open"
-    }
-    else {
-        status = "partially open"
-        description = "Shade is partially open (${position}%)"
-    }
-    logEvent("windowShade", status, null, description)
-    logEvent("position", position, "%")
+void close() {
+    setPosition(0)
 }
 
 void stop() {
@@ -214,6 +184,19 @@ void stop() {
     else {
         sendStopCommand()
     }
+}
+
+void startPositionChange(String direction) {
+    if (direction == "open") {
+        open()
+    }
+    else if (direction == "close") {
+        close()
+    }
+}
+
+void stopPositionChange() {
+    stop()
 }
 
 void setPosition(BigDecimal position) {
@@ -287,12 +270,42 @@ void setPosition(BigDecimal position) {
     runInMillis(millis.toLong(), moveComplete, [data: [sendStop: sendStop]])
 }
 
-void open() {
-    setPosition(100)
-}
+void moveComplete(Map args) {
+    if (logEnable) log.debug "moveComplete(${args})"
 
-void close() {
-    setPosition(0)
+    if (!state.moveBegin) return
+
+    // Note that we do not send a stop command if we are moving to either
+    // fully open or fully closed. This helps address the natural errors
+    // that occur when using time based estimates of position.
+    if (args.sendStop) sendStopCommand()
+
+    BigDecimal elapsed = now() - state.moveBegin
+    Integer delta = (elapsed / (travelTime.toBigDecimal() * 10.0))
+    state.moveBegin = 0
+
+    String status, position, description
+    if (state.newPosition > state.oldPosition) {
+        position = Math.min(state.oldPosition.toInteger() + delta, (Integer) 100)
+    }
+    else {
+        position = Math.max(state.oldPosition.toInteger() - delta, (Integer) 0)
+    }
+
+    if (position == "0") {
+        status = "closed"
+        description = "Shade is closed"
+    }
+    else if (position == "100") {
+        status = "open"
+        description = "Shade is open"
+    }
+    else {
+        status = "partially open"
+        description = "Shade is partially open (${position}%)"
+    }
+    logEvent("windowShade", status, null, description)
+    logEvent("position", position, "%")
 }
 
 void logEvent(String name, String value, String unit = null, String description = null, Boolean warn = false) {

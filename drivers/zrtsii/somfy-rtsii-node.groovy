@@ -63,6 +63,7 @@
 // Version 2.1.0    Add Actuator capability to allow device to
 //                  appear in selection lists.
 // Version 3.0.0    Code restructure and cleanup
+// Version 3.1.0    Add startPositionChange and stopPositionChange
 //
 
 // Supported Z-Wave Classes:

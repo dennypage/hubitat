@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,9 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+// Version 1.0.0    Initial release
+// Version 2.0.0    Code restructure and cleanup
+//
 
 definition(
     name: "Simple Switch Off Timers",
@@ -32,6 +35,7 @@ definition(
     author: "Denny Page",
     description: "Turn switches off after they have been on for a number of minutes",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-off-timers/simple-switch-off-timers.groovy",
     singleInstance: true,
     iconUrl: "",
     iconX2Url: "",
@@ -40,18 +44,15 @@ definition(
 
 preferences
 {
-     page(name: "configPage")
+    page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Simple Switch Off Timers", install: true, uninstall: true, refreshInterval: 0)
     {
-        if (app.getInstallationState() == 'COMPLETE')
-        {
+        if (app.getInstallationState() == 'COMPLETE') {
             // Ensure child labels are correct in case a device has changed label
-            childApps.each
-            {
+            childApps.each {
                 child -> child.checkLabel()
             }
 
@@ -72,20 +73,16 @@ def configPage()
             }
         }
     }
-
 }
 
-def installed()
-{
+void installed() {
     log.info "There are ${childApps.size()} Simple Switch Off Timers"
-    childApps.each
-    {
+    childApps.each {
         child -> log.info "  Simple Switch Off Timer: ${child.label}"
     }
 }
 
-def updated()
-{
+void updated() {
     unsubscribe()
     installed()
 }

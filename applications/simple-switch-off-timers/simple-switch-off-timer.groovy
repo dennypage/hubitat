@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2021, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Add App Events
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -35,6 +36,7 @@ definition(
     author: "Denny Page",
     description: "Turn a switch off after it has been on for a number of minutes",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-off-timers/simple-switch-off-timer.groovy",
     parent: "cococafe:Simple Switch Off Timers",
     iconUrl: "",
     iconX2Url: "",
@@ -46,17 +48,18 @@ preferences
     page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Simple Switch Off Timer", install: true, uninstall: true, refreshInterval: 0)
     {
         // Ensure label is correct in case the device has changed label
         checkLabel()
 
-        section("") {
+        section("")
+        {
             paragraph "Choose the switch and the number of minutes before the switch is automatically turned off"
         }
-        section("") {
+        section("")
+        {
             input "configSwitch", "capability.switch", title: "Automatically turn off this switch", multiple: false, required: true
         }
         section("")
@@ -70,56 +73,46 @@ def configPage()
     }
 }
 
-def checkLabel()
-{
-    if (configSwitch)
-    {
+void installed() {
+    checkLabel()
+
+    if (configMinutes) {
+        subscribe(configSwitch, "switch", switchEvent)
+        if (configSwitch.currentState("switch").value == "on") {
+            runIn(configMinutes.toInteger() * 60, switchOff)
+        }
+    }
+}
+
+void updated() {
+    unsubscribe()
+    unschedule()
+    installed()
+}
+
+void checkLabel() {
+    if (configSwitch) {
         oldLabel = app.getLabel()
         newLabel = "${configSwitch} off after ${configMinutes} minutes"
-        if (newLabel != oldLabel)
-        {
+        if (newLabel != oldLabel) {
             if (oldLabel) log.info "Simple Switch Off Timer changed: ${oldLabel} -> ${newLabel}"
             app.updateLabel(newLabel)
         }
     }
 }
 
-def installed()
-{
-    checkLabel()
-
-    if (configMinutes)
-    {
-        subscribe(configSwitch, "switch", switchEvent)
-        if (configSwitch.currentState("switch").value == "on")
-        {
-            runIn(configMinutes.toInteger() * 60, switchOff)
-        }
-    }
-}
-
-def updated() {
-    unsubscribe()
-    unschedule()
-    installed()
-}
-
-def switchOff()
-{
+void switchOff() {
     String desc = "Switch Off Timer: ${configSwitch} off after ${configMinutes} minutes"
     log.info "${desc}"
     if (appEvents) sendEvent(name: "SSA", value: "Off", descriptionText: "${desc}")
     configSwitch.off()
 }
 
-def switchEvent(e)
-{
-    if (e.value == "on")
-    {
+void switchEvent(evt) {
+    if (evt.value == "on") {
         runIn(configMinutes.toInteger() * 60, switchOff)
     }
-    else if (e.value == "off")
-    {
+    else if (evt.value == "off") {
         unschedule()
     }
 }

@@ -32,6 +32,7 @@
 //                  rather than milliseconds. Avoid runInMillis.
 // Version 1.2.1    Change initialized function to systemStart subscription.
 //                  Initialized isn't called for apps.
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -40,6 +41,7 @@ definition(
     author: "Denny Page",
     description: "Send alerts for a device that is idle",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-idle-alerts/simple-idle-alert.groovy",
     parent: "cococafe:Simple Idle Alerts",
     iconUrl: "",
     iconX2Url: "",
@@ -51,8 +53,7 @@ preferences
     page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Simple Idle Alert", install: true, uninstall: true, refreshInterval: 0)
     {
         // Ensure label is correct in case the device has changed label
@@ -85,63 +86,50 @@ def configPage()
     }
 }
 
-def checkLabel()
-{
-    if (configDevice)
-    {
+void installed() {
+    checkLabel()
+    if (configMinutes) {
+        runIn(1, checkIdle)
+    }
+}
+
+void updated() {
+    subscribe(location, "systemStart", hubRestartHandler)
+    unschedule()
+    installed()
+}
+
+void hubRestartHandler(evt) {
+    updated()
+}
+
+void checkLabel() {
+    if (configDevice) {
         oldLabel = app.getLabel()
         newLabel = "${configDevice} alert after ${configMinutes} minutes"
-        if (newLabel != oldLabel)
-        {
+        if (newLabel != oldLabel) {
             if (oldLabel) log.info "Simple Idle Alert changed: ${oldLabel} -> ${newLabel}"
             app.updateLabel(newLabel)
         }
     }
 }
 
-def installed()
-{
-    checkLabel()
-
-    if (configMinutes)
-    {
-        runIn(1, checkIdle)
-    }
-}
-
-def updated()
-{
-    subscribe(location, "systemStart", hubRestartHandler)
-    unschedule()
-    installed()
-}
-
-def hubRestartHandler(evt)
-{
-    updated()
-}
-
-
-private Long lastActivity(device)
-{
+private Long lastActivity(device) {
     // 2020-11-17 01:56:54+0000
     return Date.parse("yyyy-MM-dd HH:mm:ssZ", "${device.getLastActivity()}").getTime() / 1000
 }
 
-private Long idleSeconds()
-{
+private Long idleSeconds() {
     Long now = now() / 1000
 
     return now - lastActivity(configDevice)
 }
 
-def checkIdle()
-{
+void checkIdle() {
     Long configSeconds = configMinutes * 60
     Long seconds = idleSeconds()
 
-    if (seconds < configSeconds)
-    {
+    if (seconds < configSeconds) {
         runIn(configSeconds - seconds, checkIdle)
         return
     }
@@ -150,13 +138,11 @@ def checkIdle()
     sendAlert()
 }
 
-def checkActive()
-{
+void checkActive() {
     Long configSeconds = configMinutes * 60
     Long seconds = idleSeconds()
 
-    if (seconds < configSeconds)
-    {
+    if (seconds < configSeconds) {
         unschedule()
         runIn(configSeconds - seconds, checkIdle)
         return
@@ -165,13 +151,11 @@ def checkActive()
     runIn(configSeconds, checkActive)
 }
 
-def sendAlert()
-{
+void sendAlert() {
     Long configSeconds = configMinutes * 60
     Long seconds = idleSeconds()
 
-    if (seconds < configSeconds)
-    {
+    if (seconds < configSeconds) {
         unschedule()
         runIn(configSeconds - seconds, checkIdle)
         return
@@ -183,8 +167,7 @@ def sendAlert()
     if (appEvents) sendEvent(name: "SSA", value: "Idle", descriptionText: "${desc}")
     configNotification.deviceNotification("${desc}")
 
-    if (configMinutesSubsequent)
-    {
+    if (configMinutesSubsequent) {
         runIn(configMinutesSubsequent.toInteger() * 60, sendAlert)
     }
 }

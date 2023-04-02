@@ -2,9 +2,9 @@
   "packageName": "Idle Node Refresher",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.1.2",
-  "dateReleased": "2023-01-20",
-  "releaseNotes": "1.1.2 Change initialized function to systemStart subscription",
+  "version": "2.0.0",
+  "dateReleased": "2023-04-01",
+  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.1.2 Change initialized function to systemStart subscription",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/idle-node-refresher",
   "communityLink": "https://community.hubitat.com/t/release-idle-node-refresher/56613",
   "apps": [

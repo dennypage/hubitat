@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2021, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Add App Events
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -35,6 +36,7 @@ definition(
     author: "Denny Page",
     description: "Send reminders for a switch that has been left on",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-switch-reminders/simple-switch-reminder.groovy",
     parent: "cococafe:Simple Switch Reminders",
     iconUrl: "",
     iconX2Url: "",
@@ -46,20 +48,22 @@ preferences
     page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Simple Switch Reminder", install: true, uninstall: true, refreshInterval: 0)
     {
         // Ensure label is correct in case the device has changed label
         checkLabel()
 
-        section("") {
+        section("")
+        {
             paragraph "Choose the notification device, switch and the number of minutes before reminders are sent"
         }
-        section("") {
+        section("")
+        {
             input "configNotification", "capability.notification", title: "Send reminders to these devices", multiple: true, required: true
         }
-        section("") {
+        section("")
+        {
             input "configSwitch", "capability.switch", title: "Send reminders for this switch", multiple: false, required: true
         }
         section("")
@@ -77,61 +81,50 @@ def configPage()
     }
 }
 
-def checkLabel()
-{
-    if (configSwitch)
-    {
+void installed() {
+    checkLabel()
+
+    if (configMinutes) {
+        subscribe(configSwitch, "switch", switchEvent)
+        if (configSwitch.currentState("switch").value == "on") {
+            runIn(configMinutes.toInteger() * 60, switchReminder)
+        }
+    }
+}
+
+void updated() {
+    unsubscribe()
+    unschedule()
+    installed()
+}
+
+void checkLabel() {
+    if (configSwitch) {
         oldLabel = app.getLabel()
         newLabel = "${configSwitch} reminder after ${configMinutes} minutes"
-        if (newLabel != oldLabel)
-        {
+        if (newLabel != oldLabel) {
             if (oldLabel) log.info "Simple Switch Reminder changed: ${oldLabel} -> ${newLabel}"
             app.updateLabel(newLabel)
         }
     }
 }
 
-def installed()
-{
-    checkLabel()
-
-    if (configMinutes)
-    {
-        subscribe(configSwitch, "switch", switchEvent)
-        if (configSwitch.currentState("switch").value == "on")
-        {
-            runIn(configMinutes.toInteger() * 60, switchReminder)
-        }
-    }
-}
-
-def updated() {
-    unsubscribe()
-    unschedule()
-    installed()
-}
-
-def switchReminder()
-{
+void switchReminder() {
     String desc = "Switch Reminder: ${configSwitch} left on"
     log.info "${desc}"
     if (appEvents) sendEvent(name: "SSA", value: "On", descriptionText: "${desc}")
     configNotification.deviceNotification("${desc}")
 
-    if (configMinutesSubsequent)
-    {
+    if (configMinutesSubsequent) {
         runIn(configMinutesSubsequent.toInteger() * 60, switchReminder)
     }
 }
 
-def switchEvent(e)
-{
-    if (e.value == "on")
-    {
+void switchEvent(evt) {
+    if (evt.value == "on") {
         runIn(configMinutes.toInteger() * 60, switchReminder)
     }
-    else if (e.value == "off")
-    {
+    else if (evt.value == "off") {
         unschedule()
     }
 }

@@ -29,6 +29,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.0.1    Child device should be a component device
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -37,6 +38,7 @@ definition(
     author: "Denny Page",
     description: "Create a virtual door or shade device using multiple relays",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/multi-relay-door-shade-controller/multi-relay-door-shade-controller-app.groovy",
     singleInstance: false,
     iconUrl: "",
     iconX2Url: "",
@@ -48,8 +50,7 @@ preferences
     page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Multi-relay Door/Shade Controller", install: true, uninstall: true, refreshInterval: 0)
     {
         section("")
@@ -70,68 +71,58 @@ def configPage()
     }
 }
 
-def updated()
-{
+void updated() {
     log.info "Updated"
 
     app.updateLabel("Multi-Relay Door/Shade Controller - ${deviceName}")
 
     String childId = "mrdsc-${app.id}"
-    def child = getChildDevice(childId)
-    if (child == null) child = addChildDevice("cococafe", "Multi-Relay Door/Shade Controller", childId, [isComponent: true])
+    child = getChildDevice(childId)
+    if (child == null) {
+        child = addChildDevice("cococafe", "Multi-Relay Door/Shade Controller", childId, [isComponent: true])
+    }
     child.setLabel(deviceName)
 
     child.updateDataValue("travelTime", travelTime.toString())
     child.updateDataValue("openRelay", openRelay.toString())
     child.updateDataValue("closeRelay", closeRelay.toString())
-    if (stopRelay)
-    {
+    if (stopRelay) {
         child.updateDataValue("stopRelay", stopRelay.toString())
     }
-    else
-    {
+    else {
         child.removeDataValue("stopRelay")
     }
 }
 
-def installed()
-{
+void installed() {
     updated()
 }
 
-def uninstalled()
-{
+void uninstalled() {
     deleteChildDevice("mrdsc-${app.id}")
 }
 
-def move(openClose)
-{
-    if (stopRelay)
-    {
+void move(Boolean moveOpen) {
+    if (stopRelay) {
         // Safety check
-        if (stopRelay.currentValue("switch", true) == "on")
-        {
+        if (stopRelay.currentValue("switch", true) == "on") {
             log.warn "${deviceName} - Stop Relay did not auto-off"
             stopRelay.off()
         }
     }
 
-    if (openClose)
-    {
+    if (moveOpen) {
         // Safety check
-        if (closeRelay.currentValue("switch", true) == "on")
-        {
+        if (closeRelay.currentValue("switch", true) == "on") {
             log.warn "${deviceName} - Close Relay did not auto-off"
             closeRelay.off()
         }
 
         openRelay.on()
     }
-    else
-    {
+    else {
         // Safety check
-        if (openRelay.currentValue("switch", true) == "on")
-        {
+        if (openRelay.currentValue("switch", true) == "on") {
             log.warn "${deviceName} - Open Relay did not auto-off"
             openRelay.off()
         }
@@ -140,18 +131,14 @@ def move(openClose)
     }
 }
 
-def stop()
-{
-    if (stopRelay)
-    {
+void stop() {
+    if (stopRelay) {
         // Safety check
-        if (openRelay.currentValue("switch", true) == "on")
-        {
+        if (openRelay.currentValue("switch", true) == "on") {
             log.warn "${deviceName} - Open Relay did not auto-off"
             openRelay.off()
         }
-        if (closeRelay.currentValue("switch", true) == "on")
-        {
+        if (closeRelay.currentValue("switch", true) == "on") {
             log.warn "${deviceName} - Close Relay did not auto-off"
             closeRelay.off()
         }

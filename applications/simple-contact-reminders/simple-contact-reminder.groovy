@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2021, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Add App Events
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -35,6 +36,7 @@ definition(
     author: "Denny Page",
     description: "Send reminders for a contact sensor (door/window/etc.) that has been left open",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-contact-reminders/simple-contact-reminder.groovy",
     parent: "cococafe:Simple Contact Reminders",
     iconUrl: "",
     iconX2Url: "",
@@ -46,20 +48,22 @@ preferences
     page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Simple Contact Reminder", install: true, uninstall: true, refreshInterval: 0)
     {
         // Ensure label is correct in case the device has changed label
         checkLabel()
 
-        section("") {
+        section("")
+        {
             paragraph "Choose the notification device, contact sensor (door/window/etc.) and the number of minutes before reminders are sent"
         }
-        section("") {
+        section("")
+        {
             input "configNotification", "capability.notification", title: "Send reminders to these devices", multiple: true, required: true
         }
-        section("") {
+        section("")
+        {
             input "configContact", "capability.contactSensor", title: "Send reminders for this contact sensor", multiple: false, required: true
         }
         section("")
@@ -77,61 +81,50 @@ def configPage()
     }
 }
 
-def checkLabel()
-{
-    if (configContact)
-    {
+void installed() {
+    checkLabel()
+
+    if (configMinutes) {
+        subscribe(configContact, "contact", contactEvent)
+        if (configContact.currentState("contact").value == "open") {
+            runIn(configMinutes.toInteger() * 60, contactReminder)
+        }
+    }
+}
+
+void updated() {
+    unsubscribe()
+    unschedule()
+    installed()
+}
+
+void checkLabel() {
+    if (configContact) {
         oldLabel = app.getLabel()
         newLabel = "${configContact} reminder after ${configMinutes} minutes"
-        if (newLabel != oldLabel)
-        {
+        if (newLabel != oldLabel) {
             if (oldLabel) log.info "Simple Contact Reminder changed: ${oldLabel} -> ${newLabel}"
             app.updateLabel(newLabel)
         }
     }
 }
 
-def installed()
-{
-    checkLabel()
-
-    if (configMinutes)
-    {
-        subscribe(configContact, "contact", contactEvent)
-        if (configContact.currentState("contact").value == "open")
-        {
-            runIn(configMinutes.toInteger() * 60, contactReminder)
-        }
-    }
-}
-
-def updated() {
-    unsubscribe()
-    unschedule()
-    installed()
-}
-
-def contactReminder()
-{
+void contactReminder() {
     String desc = "Contact Reminder: ${configContact} left open"
     log.info "${desc}"
     if (appEvents) sendEvent(name: "SSA", value: "Open", descriptionText: "${desc}")
     configNotification.deviceNotification("${desc}")
 
-    if (configMinutesSubsequent)
-    {
+    if (configMinutesSubsequent) {
         runIn(configMinutesSubsequent.toInteger() * 60, contactReminder)
     }
 }
 
-def contactEvent(e)
-{
-    if (e.value == "open")
-    {
+void contactEvent(evt) {
+    if (evt.value == "open") {
         runIn(configMinutes.toInteger() * 60, contactReminder)
     }
-    else if (e.value == "closed")
-    {
+    else if (evt.value == "closed") {
         unschedule()
     }
 }

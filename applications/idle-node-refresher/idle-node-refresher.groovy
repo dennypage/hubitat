@@ -36,6 +36,7 @@
 // Version 1.1.1    Delay actions on reboot
 // Version 1.1.2    Change initialized function to systemStart subscription.
 //                  Initialized isn't called for apps.
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -43,7 +44,8 @@ definition(
     namespace: "cococafe",
     author: "Denny Page",
     description: "Refresh idle nodes in the network",
-    category: "Convenience",
+    category: "Utility",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/idle-node-refresher/idle-node-refresher.groovy",
     parent: "cococafe:Idle Node Refreshers",
     iconUrl: "",
     iconX2Url: "",
@@ -55,8 +57,7 @@ preferences
     page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Idle Node Refresher", install: true, uninstall: true, refreshInterval: 0)
     {
         section("")
@@ -98,26 +99,22 @@ def configPage()
     }
 }
 
-def installed()
-{
+void installed() {
     app.updateLabel(name)
     updateLastCache()
     updateSortedIndex()
     runIn(1, refreshNode)
 }
 
-def updated()
-{
+void updated() {
     subscribe(location, "systemStart", hubRestartHandler)
     unschedule()
 
-    if (idleHours < 1)
-    {
+    if (idleHours < 1) {
         app.updateSetting("idleHours", 1)
         log.warn "Input value for Inactivity Idle Hours too low: value changed to 1 hour"
     }
-    if (refreshMinutes < 2)
-    {
+    if (refreshMinutes < 2) {
         app.updateSetting("refreshMinutes", 2)
         log.warn "Input value for Refresh Interval Minutes too low: value changed to 2 minutes"
     }
@@ -125,47 +122,38 @@ def updated()
     installed()
 }
 
-def hubRestartHandler(evt)
-{
+void hubRestartHandler(evt) {
     unschedule()
     runIn(60, installed)
 }
 
-private Long lastNodeActivity(node)
-{
+private Long lastNodeActivity(Integer node) {
     // 2020-11-17 01:56:54+0000
     return Date.parse("yyyy-MM-dd HH:mm:ssZ", "${nodes[node].getLastActivity()}").getTime() / 1000
 }
 
-def updateLastCache()
-{
+void updateLastCache() {
     state.lastCache = []
-    (0 .. nodes.size() - 1).each
-    {
-        node -> state.lastCache[node] = lastNodeActivity(node)
+    (0 .. nodes.size() - 1).each { node ->
+        state.lastCache[node] = lastNodeActivity(node)
     }
 }
 
-def updateSortedIndex()
-{
-    def indexList = []
-    (0 .. nodes.size() - 1).each
-    {
-        node -> indexList[node] = node
+void updateSortedIndex() {
+    List indexList = []
+    (0 .. nodes.size() - 1).each { node ->
+        indexList[node] = node
     }
-    state.sortedIndex = indexList.sort({a, b -> state.lastCache[a] <=> state.lastCache[b]})
+    state.sortedIndex = indexList.sort { a, b -> state.lastCache[a] <=> state.lastCache[b] }
 }
 
-def switchRefresh(args)
-{
+void switchRefresh(Map args) {
     node = args.node
-    try
-    {
+    try {
         String state = nodes[node].currentState("switch", true).value
         log.info "Node ${nodes[node].getDisplayName()}: Refreshing switch state (${state})..."
 
-        if (state && state == "on")
-        {
+        if (state && state == "on") {
             nodes[node].on()
         }
         else
@@ -173,51 +161,43 @@ def switchRefresh(args)
             nodes[node].off()
         }
     }
-    catch (Exception e)
-    {
+    catch (e) {
         log.warn "Node ${nodes[node].getDisplayName()}: ${e}"
     }
 }
 
-def refreshNode()
-{
+void refreshNode() {
     Long now = now() / 1000
     Long idleSeconds = idleHours * 3600
     Long refreshSeconds = refreshMinutes * 60
     Long seconds
 
-    for (int i = 0; i < state.sortedIndex.size(); i++)
-    {
+    for (int i = 0; i < state.sortedIndex.size(); i++) {
         node = state.sortedIndex[i]
 
         seconds = now - state.lastCache[node]
-        if (seconds >= idleSeconds)
-        {
+        if (seconds >= idleSeconds) {
             // Update our cached value
             state.lastCache[node] = lastNodeActivity(node)
             seconds = (now - state.lastCache[node])
 
-            if (seconds >= idleSeconds)
-            {
+            if (seconds >= idleSeconds) {
                 // Put the node at the end of the line
                 // NB: Even if refresh() does not update lastActivity, we won't refresh
                 //     the node again until idleHours has expired
                 state.lastCache[node] = now
 
-                try
-                {
+                try {
                     Integer hours = seconds / 3600
                     log.info "Node ${nodes[node].getDisplayName()}: last activity was ${hours} hours ago. Refreshing..."
                     nodes[node].refresh()
                 }
-                catch (Exception e)
-                {
+                catch (e) {
                     log.warn "Node ${nodes[node].getDisplayName()}: ${e}"
                 }
 
                 // Refresh switch state if requested
-                if (refreshSwitch && nodes[node].hasCapability("Switch"))
-                {
+                if (refreshSwitch && nodes[node].hasCapability("Switch")) {
                     runIn(60, switchRefresh, [data: [node: node]])
                 }
 

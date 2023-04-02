@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 // Idle Node Refreshers (Parent application)
 //
 // Version 1.0.0    Initial release
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -35,7 +36,8 @@ definition(
     namespace: "cococafe",
     author: "Denny Page",
     description: "Refresh idle nodes in the network",
-    category: "Convenience",
+    category: "Utility",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/idle-node-refresher/idle-node-refreshers.groovy",
     singleInstance: true,
     iconUrl: "",
     iconX2Url: "",
@@ -44,22 +46,19 @@ definition(
 
 preferences
 {
-     page(name: "configPage")
+    page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Refresh idle nodes in the network", install: true, uninstall: true, refreshInterval: 0)
     {
-        if (app.getInstallationState() == 'COMPLETE')
-        {
+        if (app.getInstallationState() == 'COMPLETE') {
             section
             {
                 app(name: "childApps", appName: "Idle Node Refresher", namespace: "cococafe", title: "Create an Idle Node Refresher", multiple: true)
             }
         }
-        else
-        {
+        else {
             section("")
             {
                 paragraph "<b>Click Done to complete the installation.</b>"
@@ -68,8 +67,7 @@ def configPage()
     }
 }
 
-def installed()
-{
+void installed() {
     log.info "There are ${childApps.size()} Idle Node Refreshers"
     childApps.each
     {
@@ -77,7 +75,6 @@ def installed()
     }
 }
 
-def updated()
-{
+void updated() {
     installed()
 }

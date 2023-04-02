@@ -2,9 +2,9 @@
   "packageName": "Simple Idle Alerts",
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
-  "version": "1.2.1",
-  "dateReleased": "2023-01-20",
-  "releaseNotes": "1.2.1 Change initialized function to systemStart subscriptio",
+  "version": "2.0.0",
+  "dateReleased": "2023-04-01",
+  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.2.1 Change initialized function to systemStart subscriptio",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-idle-alerts",
   "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
   "apps": [

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020, Denny Page
+// Copyright (c) 2020-2023, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 //
 //
 // Version 1.0.0    Initial release
+// Version 2.0.0    Code restructure and cleanup
 //
 
 definition(
@@ -35,6 +36,7 @@ definition(
     author: "Denny Page",
     description: "Send alerts for devices that are idle",
     category: "Convenience",
+    importUrl: "https://raw.githubusercontent.com/dennypage/hubitat/master/applications/simple-idle-alerts/simple-idle-alerts.groovy",
     singleInstance: true,
     iconUrl: "",
     iconX2Url: "",
@@ -43,18 +45,15 @@ definition(
 
 preferences
 {
-     page(name: "configPage")
+    page(name: "configPage")
 }
 
-def configPage()
-{
+def configPage() {
     dynamicPage(name: "", title: "Simple Idle Alerts", install: true, uninstall: true, refreshInterval: 0)
     {
-        if (app.getInstallationState() == 'COMPLETE')
-        {
+        if (app.getInstallationState() == 'COMPLETE') {
             // Ensure child labels are correct in case a device has changed label
-            childApps.each
-            {
+            childApps.each {
                 child -> child.checkLabel()
             }
 
@@ -75,20 +74,16 @@ def configPage()
             }
         }
     }
-
 }
 
-def installed()
-{
+void installed() {
     log.info "There are ${childApps.size()} Simple Idle Alerts"
-    childApps.each
-    {
+    childApps.each {
         child -> log.info "  Simple Idle Alert: ${child.label}"
     }
 }
 
-def updated()
-{
+void updated() {
     unsubscribe()
     installed()
 }

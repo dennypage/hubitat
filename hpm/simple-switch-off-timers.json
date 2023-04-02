@@ -2,9 +2,9 @@
   "packageName": "Simple Switch Off TImers",
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
-  "version": "1.1.0",
-  "dateReleased": "2021-01-01",
-  "releaseNotes": "1.1.0 Add App Events",
+  "version": "2.0.0",
+  "dateReleased": "2023-04-01",
+  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.1.0 Add App Events",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/simple-switch-off-timers",
   "communityLink": "https://community.hubitat.com/t/simple-series-applications/44039",
   "apps": [

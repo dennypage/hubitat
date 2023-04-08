@@ -39,6 +39,7 @@
 // Version 2.0.0    Add a refresh capability (node ping)
 // Version 2.0.1    Don't log on node ping
 // Version 3.0.0    Code restructure and cleanup
+// Version 3.2.0    Report protocol and application (firmware) versions
 //
 
 // Supported Z-Wave Classes:
@@ -92,10 +93,16 @@ void parse(String description) {
 
 void zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd) {
     if (logEnable) log.debug "VersionReport: ${cmd}"
+    device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
+    device.updateDataValue("applicationVersion", "${cmd.applicationVersion}.${cmd.applicationSubVersion}")
 }
 
 void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd) {
     if (logEnable) log.debug "Manufacturer Specific Report: ${cmd}"
+    // Already in Data as "manufacturer", "deviceId", "deviceType"
+    //device.updateDataValue("manufacturerId", "${cmd.manufacturerId}")
+    //device.updateDataValue("productId", "${cmd.productId}")
+    //device.updateDataValue("productTypeId", "${cmd.productTypeId}")
 }
 
 void zwaveEvent(hubitat.zwave.Command cmd) {

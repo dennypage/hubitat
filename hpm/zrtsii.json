@@ -2,9 +2,9 @@
   "packageName": "Somfy Z-Wave to RTS Interface II (ZRTSII)",
   "minimumHEVersion": "2.2.1",
   "author": "Denny Page",
-  "version": "3.1.0",
-  "dateReleased": "2023-04-01",
-  "releaseNotes": "3.1.0 Add startPositionChange and stopPositionChange\n3.0.0 Code restructure and cleanup\n2.1.0 Add Actuator capability\n2.0.1 Use SwitchMultilevelReport for node ping\n2.0.0 Support Somfy's My Postion",
+  "version": "3.2.0",
+  "dateReleased": "2023-04-08",
+  "releaseNotes": "3.2.0 Report protocol and application (firmware) versions\n3.1.0 Add startPositionChange and stopPositionChange\n3.0.0 Code restructure and cleanup\n2.1.0 Add Actuator capability\n2.0.1 Use SwitchMultilevelReport for node ping\n2.0.0 Support Somfy's My Postion",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zrtsii",
   "communityLink": "https://community.hubitat.com/t/somfy-z-wave-to-rts-interface-ii-driver/43745",
   "drivers": [

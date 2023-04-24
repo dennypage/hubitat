@@ -30,6 +30,8 @@
  * Network UPS Tools (NUT) monitor and shutdown controller (upsmon) for Hubitat
  *
  * Version 1.0.0    Initial release
+ * Version 1.1.0    Use 0 for unknown numerical values rather than a string
+ *                  Set the unit for numerical values
  */
 
 metadata {
@@ -53,13 +55,13 @@ metadata {
 import groovy.transform.Field
 
 // Variable name -> attribute map
-@Field static final Map<String,String> variableMap = [
-    'battery.charge':  'battery',
-    'battery.runtime': 'runtime',
-    'ups.load':        'load',
-    'ups.status':      'status'
+@Field static final Map<String,Map> variableMap = [
+    'battery.charge':  [name: 'battery', unit: '%', unknownValue: '0'],
+    'battery.runtime': [name: 'runtime', unit: 's', unknownValue: '0'],
+    'ups.load':        [name: 'load',    unit: '%', unknownValue: '0'],
+    'ups.status':      [name: 'status',  unit: '',  unknownValue: 'unknown']
 ]
-@Field static final String attributeStatus = 'status'
+@Field static final String statusName = 'status'
 @Field static final String statusShutdownRequested = 'Shutdown Requested'
 
 // UPSD statword -> status map
@@ -105,7 +107,7 @@ preferences {
 
 void installed() {
     variableMap.each { variable, attribute ->
-        sendEvent(name: attribute, value: "unknown")
+        sendEvent(name: attribute.name, unit: attribute.unit, value: attribute.unknownValue)
     }
 }
 
@@ -166,7 +168,7 @@ void upsdDisconnect() {
     }
 
     variableMap.each { variable, attribute ->
-        sendEvent(name: attribute, value: "unknown")
+        sendEvent(name: attribute.name, unit: attribute.unit, value: attribute.unknownValue)
     }
 }
 
@@ -221,7 +223,7 @@ void parse(String message) {
                 log.error("upsd: ${errorMap[response[1]]}")
                 upsdDisconnect()
                 runIn(pollFreq, upsdConnect)
-                sendEvent(name: attributeStatus, value: errorMap[response[1]])
+                sendEvent(name: statusName, value: errorMap[response[1]])
                 break
 
             case errDataStale:
@@ -229,11 +231,11 @@ void parse(String message) {
                 // Connected, but data cannot be trusted
                 log.warn("upsd: ${errorMap[response[1]]}")
                 variableMap.each { variable, attribute ->
-                    if (attribute != attributeStatus) {
-                        sendEvent(name: attribute, value: "unknown")
+                    if (attribute.name != statusName) {
+                        sendEvent(name: attribute.name, unit: attribute.unit, value: attribute.unknownValue)
                     }
                 }
-                sendEvent(name: attributeStatus, value: errorMap[response[1]])
+                sendEvent(name: statusName, value: errorMap[response[1]])
                 break
 
             default:
@@ -249,16 +251,16 @@ void parse(String message) {
     }
 
     // Get the variable attribute
-    String attribute = variableMap[response[2]]
+    Map attribute = variableMap[response[2]]
     if (attribute == null) {
         log.error("upsd: unexpected variable: ${response[2]} = ${response[3]}")
         return
     }
 
     // If the attribute isn't the status, process it as a simple numeric entry and return
-    if (attribute != attributeStatus) {
+    if (attribute.name != statusName) {
         Number n = response[3].toFloat()
-        sendEvent(name: attribute, value: n)
+        sendEvent(name: attribute.name, unit: attribute.unit, value: n)
         return
     }
 
@@ -289,7 +291,7 @@ void parse(String message) {
     }
 
     // Send the status event
-    sendEvent(name: attributeStatus, value: status)
+    sendEvent(name: statusName, value: status)
 
     // Handle a reqest to shut down
     if (shutdown) {
@@ -299,7 +301,7 @@ void parse(String message) {
         upsdDisconnect()
 
         // Shut down the hub if enabled
-        sendEvent(name: attributeStatus, value: statusShutdownRequested)
+        sendEvent(name: statusName, value: statusShutdownRequested)
         if (shutdownEnable) {
             sendHubShutdownCommand()
         }

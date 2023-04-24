@@ -2,9 +2,9 @@
   "packageName": "NUT ups monitor (upsmon)",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.0.0",
-  "dateReleased": "2023-03-22",
-  "releaseNotes": "1.0.0 Initial release",
+  "version": "1.1.0",
+  "dateReleased": "2023-04-24",
+  "releaseNotes": "1.1.0\n Use 0 for unknown numerical values rather than a string\n Set the unit for numerical values\n1.0.0 Initial release",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/nut-upsmon",
   "communityLink": "https://community.hubitat.com/t/release-network-ups-tools-nut-monitor-and-shutdown-controller-upsmon/115483",
   "drivers": [

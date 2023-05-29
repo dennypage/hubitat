@@ -2,9 +2,9 @@
   "packageName": "NUT ups monitor (upsmon)",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "dateReleased": "2023-05-29",
-  "releaseNotes": "1.2.0 Add PowerSource capability\n1.1.0\n Use 0 for unknown numerical values rather than a string\n Set the unit for numerical values\n1.0.0 Initial release",
+  "releaseNotes": "1.2.1 Remove extraneous single quote on battery attribute\n1.2.0 Add PowerSource capability\n1.1.0\n Use 0 for unknown numerical values rather than a string\n Set the unit for numerical values\n1.0.0 Initial release",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/nut-upsmon",
   "communityLink": "https://community.hubitat.com/t/release-network-ups-tools-nut-monitor-and-shutdown-controller-upsmon/115483",
   "drivers": [

@@ -33,6 +33,7 @@
  * Version 1.1.0    Use 0 for unknown numerical values rather than a string
  *                  Set the unit for numerical values
  * Version 1.2.0    Add PowerSource capability
+ * Version 1.2.1    Remove extraneous single quote on battery attribute
  */
 
 metadata {
@@ -49,7 +50,7 @@ metadata {
 
         attribute "status",   "String"
         attribute "load",     "number"
-        attribute "battery'", "number"
+        attribute "battery", "number"
         attribute "runtime",  "number"
     }
 }

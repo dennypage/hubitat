@@ -32,6 +32,7 @@
  * Version 1.0.0    Initial release
  * Version 1.1.0    Use 0 for unknown numerical values rather than a string
  *                  Set the unit for numerical values
+ * Version 1.2.0    Add PowerSource capability
  */
 
 metadata {
@@ -44,6 +45,7 @@ metadata {
         capability "Initialize"
         capability "Refresh"
         capability "Battery"
+        capability "PowerSource"
 
         attribute "status",   "String"
         attribute "load",     "number"
@@ -63,6 +65,11 @@ import groovy.transform.Field
 ]
 @Field static final String statusName = 'status'
 @Field static final String statusShutdownRequested = 'Shutdown Requested'
+
+@Field static final String powerSourceName = 'powerSource'
+@Field static final String powerSourceMains = 'mains'
+@Field static final String powerSourceBattery = 'battery'
+@Field static final String powerSourceUnknown = 'unknown'
 
 // UPSD statword -> status map
 //   There are additional statwords that might be seen,
@@ -109,6 +116,7 @@ void installed() {
     variableMap.each { variable, attribute ->
         sendEvent(name: attribute.name, unit: attribute.unit, value: attribute.unknownValue)
     }
+    sendEvent(name: powerSourceName, value: powerSourceUnknown)
 }
 
 void uninstalled() {
@@ -170,6 +178,7 @@ void upsdDisconnect() {
     variableMap.each { variable, attribute ->
         sendEvent(name: attribute.name, unit: attribute.unit, value: attribute.unknownValue)
     }
+    sendEvent(name: powerSourceName, value: powerSourceUnknown)
 }
 
 void upsdPoll() {
@@ -236,6 +245,7 @@ void parse(String message) {
                     }
                 }
                 sendEvent(name: statusName, value: errorMap[response[1]])
+                sendEvent(name: powerSourceName, value: powerSourceUnknown)
                 break
 
             default:
@@ -272,13 +282,16 @@ void parse(String message) {
 
     // Build the status string, ensuring we have a primary status up front
     String status
+    String powerSource
     if (statwords.contains(statwordOL)) {
         status = statwordMap[statwordOL]
         statwords -= statwordOL
+        powerSource = powerSourceMains
     }
     else if (statwords.contains(statwordOB)) {
         status = statwordMap[statwordOB]
         statwords -= statwordOB
+        powerSource = powerSourceBattery
     }
     else if (statwords.contains(statwordFSD)) {
         status = statwordMap[statwordFSD]
@@ -292,6 +305,9 @@ void parse(String message) {
 
     // Send the status event
     sendEvent(name: statusName, value: status)
+    if (powerSource) {
+        sendEvent(name: powerSourceName, value: powerSource)
+    }
 
     // Handle a reqest to shut down
     if (shutdown) {

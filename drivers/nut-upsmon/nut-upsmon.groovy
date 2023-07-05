@@ -34,6 +34,7 @@
  *                  Set the unit for numerical values
  * Version 1.2.0    Add PowerSource capability
  * Version 1.2.1    Remove extraneous single quote on battery attribute
+ * Version 1.2.2    Add status to shutdown log entry
  */
 
 metadata {
@@ -312,7 +313,7 @@ void parse(String message) {
 
     // Handle a reqest to shut down
     if (shutdown) {
-        log.warn("upsd requesting client shutdown")
+        log.warn("upsd requesting client shutdown (status ${status})")
 
         // Let the server know we're leaving
         upsdDisconnect()

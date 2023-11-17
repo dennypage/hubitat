@@ -1,0 +1,19 @@
+{
+  "packageName": "GoControl Garage Door Opener",
+  "minimumHEVersion": "2.2.3",
+  "author": "Denny Page",
+  "version": "2.0.0",
+  "dateReleased": "2023-11-17",
+  "releaseNotes": "1.0.0 Initial release",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/gocontrol",
+  "communityLink": "https://community.hubitat.com/t/release-gocontrol-garage-door-opener/128029",
+  "drivers": [
+    {
+      "id": "383ae64c-a3c2-47e8-b0d6-9d0e38089286",
+      "name": "GoControl Garage Door Opener",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/gocontrol/gocontrol.groovy",
+      "required": true
+    }
+  ]
+}

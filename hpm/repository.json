@@ -11,6 +11,13 @@
       "description": "Driver for the Aeotec Range Extender 7"
     },
     {
+      "name": "GoControl Garage Door Opener",
+      "category": "Integrations",
+      "tags": ["Garage Doors", "ZWave"],
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/gocontrol.json",
+      "description": "Driver for GoControl Garage Door Openers"
+    },
+    {
       "name": "Idle Node Refresher",
       "category": "Utility",
       "tags": ["Tools & Utilities", "ZWave"],

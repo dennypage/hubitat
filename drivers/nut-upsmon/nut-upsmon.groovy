@@ -1,7 +1,7 @@
 /* groovylint-disable LineLength, MethodSize, UnnecessaryGString */
 
 /*
- * Copyright (c) 2023, Denny Page
+ * Copyright (c) 2023-2024, Denny Page
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
  * Version 1.2.0    Add PowerSource capability
  * Version 1.2.1    Remove extraneous single quote on battery attribute
  * Version 1.2.2    Add status to shutdown log entry
+ * Version 1.3.0    Add Important Notes
  */
 
 metadata {
@@ -108,10 +109,11 @@ preferences {
     input name: "upsName", type: "text", title: "UPS name", required: true
     input name: "username", type: "text", title: "NUT username", required: true
     input name: "password", type: "password", title: "NUT password", required: true
-    input name: "pollFreq", type: "number", title: "Polling frequency", defaultValue: 5, range: "1..30", required: true
+    input name: "pollFreq", type: "number", title: "Polling Frequency<sup><b>1</b></sup>", defaultValue: 5, range: "1..30", required: true
 
-    input name: "shutdownEnable", title: "<b>Enable Hub shutdown</b>", description: "Note that if you do not enable this, the hub will not actually shut down when the ups battery runs out", type: "bool", defaultValue: false
+    input name: "shutdownEnable", title: "Enable Hub Shutdown <sup><b>2</b></sup>", type: "bool", defaultValue: false
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: false
+    input "notes", "hidden", title: "<b>Important Notes:</b>", description: "<b>1.</b> The Polling Frequency should be less that the server's <a href='https://networkupstools.org/docs/man/upsmon.conf.html' target='_blank'>HOSTSYNC</a> setting (default 15 seconds). Failure to do so may result in the NUT server shutting down before the hub knows that the ups is on battery.<br><b>2.</b> The Enable Hub Shutdown option is required to enable automatic shutdown of the hub. If you do not enable this option, the driver will report ups status, but will not initiate a hub shutdown even when the NUT server instructs it to do so."
 }
 
 void installed() {

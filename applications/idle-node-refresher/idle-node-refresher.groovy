@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2023, Denny Page
+// Copyright (c) 2020-2024, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 // Version 1.1.2    Change initialized function to systemStart subscription.
 //                  Initialized isn't called for apps.
 // Version 2.0.0    Code restructure and cleanup
+// Version 2.0.1    Use capability.refresh for node selection
 //
 
 definition(
@@ -68,7 +69,7 @@ def configPage() {
         {
             paragraph "<b>Nodes to be monitored</b>: The nodes to be monitored and refreshed when idle. " +
                 "Selected nodes must have a refresh() command."
-            input "nodes", "capability.*", title: "Nodes to be monitored", multiple: true, required: true
+            input "nodes", "capability.refresh", title: "Nodes to be monitored", multiple: true, required: true
         }
         section("")
         {
@@ -206,7 +207,7 @@ void refreshNode() {
         }
     }
 
-    // Resort to integrate any activity cache changes
+    // Re-sort to integrate any activity cache changes
     updateSortedIndex()
 
     // Schedule our next refresh

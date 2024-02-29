@@ -3,8 +3,8 @@
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
   "version": "2.0.0",
-  "dateReleased": "2023-04-01",
-  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.1.2 Change initialized function to systemStart subscription",
+  "dateReleased": "2024-02-28",
+  "releaseNotes": "2.0.1 Use capability.refresh for node selection\n2.0.0 Code restructure and cleanup\n1.1.2 Change initialized function to systemStart subscription",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/idle-node-refresher",
   "communityLink": "https://community.hubitat.com/t/release-idle-node-refresher/56613",
   "apps": [

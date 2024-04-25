@@ -4,6 +4,7 @@
 * [Aeotec Range Extender 7](drivers/aeotec-re7)
 * [GoControl Garage Door Openers](drivers/gocontrol)
 * [NUT UPS monitor (upsmon)](drivers/nut-upsmon)
+* [Philio PAT02 Flood / Temperature / Humidity sensor](drivers/pat02)
 * [Philio PAT02-B Temperature / Humidity sensor](drivers/pat02-b)
 * [Ring Range Extender gen2](drivers/ring-re2)
 * [Somfy Z-Wave to RTS Interface II (ZRTSII)](drivers/zrtsii)

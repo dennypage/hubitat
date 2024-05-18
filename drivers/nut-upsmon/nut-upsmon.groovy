@@ -36,6 +36,7 @@
  * Version 1.2.1    Remove extraneous single quote on battery attribute
  * Version 1.2.2    Add status to shutdown log entry
  * Version 1.3.0    Add Important Notes
+ * Version 1.4.0    Delay initialization to avoid spurious username/password required errors on startup
  */
 
 metadata {
@@ -94,11 +95,15 @@ import groovy.transform.Field
 @Field static final Map<String,String> errorMap = [
     'ACCESS-DENIED': 'Access denied',
     'UNKNOWN-UPS': 'Unknown ups',
+    'USERNAME-REQUIRED': 'Username required',
+    'PASSWORD-REQUIRED': 'Password required',
     'DATA-STALE': 'Stale data',
     'DRIVER-NOT-CONNECTED': 'Driver not connected'
 ]
 @Field static final String errAccessDenied = 'ACCESS-DENIED'
 @Field static final String errUnknownUps = 'UNKNOWN-UPS'
+@Field static final String errUsernameRequired = 'USERNAME-REQUIRED'
+@Field static final String errPasswordRequired = 'PASSWORD-REQUIRED'
 @Field static final String errDataStale = 'DATA-STALE'
 @Field static final String errDriverNotConnected = 'DRIVER-NOT-CONNECTED'
 @Field static final String errVarNotSupported = 'VAR-NOT-SUPPORTED'
@@ -134,8 +139,9 @@ void updated() {
 }
 
 void initialize() {
-    upsdDisconnect()
-    runIn(1, upsdConnect)
+    unschedule()
+    state.upsdConnected = false
+    runIn(15, upsdConnect)
 }
 
 void refresh() {
@@ -154,6 +160,7 @@ void upsdConnect() {
 
         telnetSend("USERNAME ${username}")
         telnetSend("PASSWORD ${password}")
+        pauseExecution(250)
         telnetSend("LOGIN ${upsName}")
 
         upsdPoll()
@@ -237,6 +244,12 @@ void parse(String message) {
                 upsdDisconnect()
                 runIn(pollFreq, upsdConnect)
                 sendEvent(name: statusName, value: errorMap[response[1]])
+                break
+
+            case errUsernameRequired:
+            case errPasswordRequired:
+                // Spurious errors
+                log.warn("upsd: ${errorMap[response[1]]}")
                 break
 
             case errDataStale:

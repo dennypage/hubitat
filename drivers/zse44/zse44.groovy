@@ -82,7 +82,6 @@ metadata
 //       confirmed on 2024-08-02 the published doc is incorrect, and that the doc would be updated
 //       in the near future.
 
-
 @Field static final Map<Integer,Map> deviceParamaters = [
     3: [name: "temperatureReportThreshold", title: "Temperature report threshold (°F)",
         type: "decimal", size: "1", defaultValue: "2.0", range: "1.0..10.0",
@@ -306,7 +305,7 @@ void parse(String description) {
 void zwaveEvent(hubitat.zwave.commands.sensormultilevelv11.SensorMultilevelReport cmd) {
     if (logEnable) log.debug "SensorMultilevelReport: ${cmd}"
 
-    String value, newValue, unit
+    String value, unit
     switch (cmd.sensorType) {
         case 1: // temperature
             value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmd.scale == 1 ? "F" : "C", cmd.precision)

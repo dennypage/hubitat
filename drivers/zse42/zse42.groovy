@@ -77,7 +77,6 @@ metadata
 //   NB: Doc as of 2024-08-01 says the range for parameter 4 (low battery alert threshold) is 10-50,
 //       however this does not match behavior of firmware version 2.00 (800 series).
 
-
 @Field static final Map<Integer,Map> deviceParamaters = [
     1: [name: "waterBlinkLED", title: "Blink LED when sensor is wet",
         type: "enum", size: "1", defaultValue: "0",

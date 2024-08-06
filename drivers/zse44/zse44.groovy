@@ -26,6 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Version 1.0.0    Initial release
+// Version 1.0.1    Update command classes following clarification from Zooz.
 //
 
 // Supported Z-Wave Classes:
@@ -38,13 +39,13 @@
 //     0x6C COMMAND_CLASS_SUPERVISION
 //     0x70 COMMAND_CLASS_CONFIGURATION_v4
 //     0x71 COMMAND_CLASS_NOTIFICATION_V8
-//     0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC
+//     0x72 COMMAND_CLASS_MANUFACTURER_SPECIFIC_V2
 //     0x73 COMMAND_CLASS_POWERLEVEL
 //     0x7A COMMAND_CLASS_FIRMWARE_UPDATE_MD_V5
 //     0x80 COMMAND_CLASS_BATTERY
 //     0x84 COMMAND_CLASS_WAKE_UP_V2
 //     0x85 COMMAND_CLASS_ASSOCIATION_V3
-//     0x86 COMMAND_CLASS_VERSION_V2
+//     0x86 COMMAND_CLASS_VERSION_V3
 //     0x8E COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V4
 //     0x8F COMMAND_CLASS_INDICATOR_V3
 //     0x9F COMMAND_CLASS_SECURITY_2
@@ -69,7 +70,7 @@ metadata
     }
 }
 
-@Field static final Map commandClassVersions = [0x31:11, 0x70:4, 0x72:1, 0x80:1, 0x84:2, 0x86:2]
+@Field static final Map commandClassVersions = [0x31:11, 0x70:4, 0x72:2, 0x80:1, 0x84:2, 0x86:3]
 
 //
 // Device parameters:
@@ -216,8 +217,8 @@ void deviceSync() {
 
     List<hubitat.zwave.Command> cmds = []
     if (resync) {
-        cmds.add(zwave.manufacturerSpecificV1.manufacturerSpecificGet())
-        cmds.add(zwave.versionV2.versionGet())
+        cmds.add(zwave.manufacturerSpecificV2.manufacturerSpecificGet())
+        cmds.add(zwave.versionV3.versionGet())
     }
 
     deviceParamaters.each { parameter, map ->
@@ -358,14 +359,14 @@ void zwaveEvent(hubitat.zwave.commands.wakeupv2.WakeUpNotification cmd) {
     runInMillis(200, deviceSync)
 }
 
-void zwaveEvent(hubitat.zwave.commands.versionv2.VersionReport cmd) {
+void zwaveEvent(hubitat.zwave.commands.versionv3.VersionReport cmd) {
     if (logEnable) log.debug "VersionReport: ${cmd}"
     device.updateDataValue("firmwareVersion", "${cmd.firmware0Version}.${cmd.firmware0SubVersion}")
     device.updateDataValue("protocolVersion", "${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}")
     device.updateDataValue("hardwareVersion", "${cmd.hardwareVersion}")
 }
 
-void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd) {
+void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv2.ManufacturerSpecificReport cmd) {
     if (logEnable) log.debug "ManufacturerSpecificReport: ${cmd}"
     device.updateDataValue("manufacturer", "${cmd.manufacturerId}")
     device.updateDataValue("deviceType", "${cmd.productTypeId}")

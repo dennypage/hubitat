@@ -1,0 +1,19 @@
+{
+  "packageName": "Zooz Temperature | Humidity XS Sensor ZSE44",
+  "minimumHEVersion": "2.2.3",
+  "author": "Denny Page",
+  "version": "1.0.1",
+  "dateReleased": "2024-08-07",
+  "releaseNotes": "1.0.1 Initial release",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zse44",
+  "communityLink": "https://community.hubitat.com/t/release-zooz-zse44-temperature-humidity-xs-sensor-driver/141548",
+  "drivers": [
+    {
+      "id": "acea61a6-5653-4638-9efa-6610e5b695ab",
+      "name": "Zooz ZSE44",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/zse44/zse44.groovy",
+      "required": true
+    }
+  ]
+}

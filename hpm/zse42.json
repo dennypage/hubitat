@@ -1,0 +1,19 @@
+{
+  "packageName": "Zooz Water Leak XS Sensor ZSE42",
+  "minimumHEVersion": "2.2.3",
+  "author": "Denny Page",
+  "version": "1.0.0",
+  "dateReleased": "2024-08-07",
+  "releaseNotes": "1.0.0 Initial release",
+  "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zse42",
+  "communityLink": "https://community.hubitat.com/t/release-zooz-zse42-water-leak-xs-sensor-driver/141549",
+  "drivers": [
+    {
+      "id": "c036ffa7-9d3d-4bc8-90b9-33e43dfba873",
+      "name": "Zooz ZSE42",
+      "namespace": "cococafe",
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/drivers/zse42/zse42.groovy",
+      "required": true
+    }
+  ]
+}

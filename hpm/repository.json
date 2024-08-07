@@ -100,6 +100,20 @@
       "tags": ["Weather", "LAN"],
       "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/weewx.json",
       "description": "Driver to provide a direct (local) connection between WeeWX and Hubitat"
+    },
+    {
+      "name": "Zooz Temperature | Humidity XS Sensor ZSE44",
+      "category": "Integrations",
+      "tags": ["Temperature & Humidity", "ZWave"],
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/zse44.json",
+      "description": "Driver for the Zooz ZSE44 Temperature | Humidity XS Sensor"
+    },
+    {
+      "name": "Zooz Water Leak XS Sensor ZSE42",
+      "category": "Integrations",
+      "tags": ["Water", "ZWave"],
+      "location": "https://raw.githubusercontent.com/dennypage/hubitat/master/hpm/zse42.json",
+      "description": "Driver for the Zooz ZSE42 Water Leak XS sensor"
     }
   ]
 }

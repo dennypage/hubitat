@@ -66,7 +66,7 @@ metadata
         capability "Configuration"
         capability "Battery"
 
-        fingerprint mfr: "027A", prod: "7000", deviceId: "E004" // Zooz Temperature | Humidity XS Sensor ZSE44
+        fingerprint mfr: "027A", prod: "7000", deviceId: "E004" // Zooz Temperature / Humidity XS Sensor ZSE44
     }
 }
 

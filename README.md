@@ -9,7 +9,7 @@
 * [Ring Range Extender gen2](drivers/ring-re2)
 * [Somfy Z-Wave to RTS Interface II (ZRTSII)](drivers/zrtsii)
 * [WeeWX to Hubitat device](drivers/weewx)
-* [Zooz Temperature | Humidity XS Sensor ZSE44](drivers/zse44)
+* [Zooz Temperature / Humidity XS Sensor ZSE44](drivers/zse44)
 * [Zooz Water Leak XS Sensor ZSE42](drivers/zse42)
 
 

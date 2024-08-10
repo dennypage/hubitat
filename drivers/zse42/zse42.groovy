@@ -27,6 +27,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.1.0    Put Supervision handling back
+// Version 1.1.1    Fix refresh issue while sensor is wet
 //
 
 // Supported Z-Wave Classes:
@@ -223,10 +224,7 @@ void deviceSync() {
 
     if (refresh) {
         cmds.add(zwave.batteryV1.batteryGet())
-        // Unfortunately, with firmware version 2.0, the ZSE42's response to a notificationGet
-        // is always dry, even if the sensor is actually wet. We don't want to trigger a false
-        // dry notification, so it's better not to ask for a report.
-        //cmds.add(zwave.notificationV8.notificationGet(notificationType: 5, v1AlarmType: 0))
+        cmds.add(zwave.notificationV8.notificationGet(notificationType: 5, event: 2))
     }
 
     cmds.add(zwave.wakeUpV2.wakeUpNoMoreInformation())

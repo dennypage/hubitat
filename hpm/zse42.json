@@ -3,8 +3,8 @@
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
   "version": "1.1.0",
-  "dateReleased": "2024-08-08",
-  "releaseNotes": "1.1.0 Put Supervision handling back\n1.0.0 Initial release",
+  "dateReleased": "2024-08-10",
+  "releaseNotes": "1.1.1 Fix refresh issue while sensor is wet\n1.1.0 Put Supervision handling back\n1.0.0 Initial release",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zse42",
   "communityLink": "https://community.hubitat.com/t/release-zooz-zse42-water-leak-xs-sensor-driver/141549",
   "drivers": [

@@ -27,6 +27,7 @@
 //
 // Version 1.0.0    Initial release
 // Version 1.0.1    Update command classes following clarification from Zooz.
+// Version 1.1.0    Put Supervision handling back
 //
 
 // Supported Z-Wave Classes:
@@ -70,7 +71,7 @@ metadata
     }
 }
 
-@Field static final Map commandClassVersions = [0x31:11, 0x70:4, 0x72:2, 0x80:1, 0x84:2, 0x86:3]
+@Field static final Map commandClassVersions = [0x31:11, 0x6C:1, 0x70:4, 0x71:8, 0x72:2, 0x80:1, 0x84:2, 0x86:3]
 
 //
 // Device parameters:
@@ -334,6 +335,15 @@ void zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd) {
     }
 }
 
+void zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd) {
+    if (logEnable) log.debug "NotificationReport: ${cmd}"
+
+    switch (cmd.notificationType) {
+        default:
+            log.warn "Unknown NotificationReport: ${cmd}"
+    }
+}
+
 void zwaveEvent(hubitat.zwave.commands.configurationv4.ConfigurationReport cmd) {
     if (logEnable) log.debug "ConfigurationReport: ${cmd}"
 
@@ -370,6 +380,17 @@ void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv2.ManufacturerSpecif
     device.updateDataValue("manufacturer", "${cmd.manufacturerId}")
     device.updateDataValue("deviceType", "${cmd.productTypeId}")
     device.updateDataValue("deviceId", "${cmd.productId}")
+}
+
+void zwaveEvent(hubitat.zwave.commands.supervisionv1.SupervisionGet cmd) {
+    if (logEnable) log.debug "SupervisionGet: ${cmd}"
+
+    encapCmd = cmd.encapsulatedCommand(commandClassVersions)
+    if (encapCmd) {
+        zwaveEvent(encapCmd)
+    }
+
+    sendCmd(zwave.supervisionV1.supervisionReport(sessionID: cmd.sessionID, reserved: 0, moreStatusUpdates: false, status: 0xFF, duration: 0))
 }
 
 void zwaveEvent(hubitat.zwave.Command cmd) {

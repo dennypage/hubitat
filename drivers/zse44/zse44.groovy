@@ -28,6 +28,7 @@
 // Version 1.0.0    Initial release
 // Version 1.0.1    Update command classes following clarification from Zooz.
 // Version 1.1.0    Put Supervision handling back
+// Version 1.2.0    Discard out of range temperature or humidity values
 //
 
 // Supported Z-Wave Classes:
@@ -309,12 +310,22 @@ void zwaveEvent(hubitat.zwave.commands.sensormultilevelv11.SensorMultilevelRepor
     String value, unit
     switch (cmd.sensorType) {
         case 1: // temperature
+            if (cmd.scaledSensorValue < 0.0 || cmd.scaledSensorValue > 200.0) {
+                log.warn "Discarding invalid temperature value: ${cmd.scaledSensorValue}°F"
+                return
+            }
+
             value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmd.scale == 1 ? "F" : "C", cmd.precision)
             unit = getTemperatureScale()
             logEvent("temperature", value, unit, "Temperature is ${value}°${unit}")
             break
 
         case 5: // humidity
+            if (cmd.scaledSensorValue < 0.0 || cmd.scaledSensorValue > 100.0) {
+                log.warn "Discarding invalid humidity value: ${cmd.scaledSensorValue}%"
+                return
+            }
+
             value = cmd.scaledSensorValue
             logEvent("humidity", value, "%", "Humidity is ${value}%")
             break

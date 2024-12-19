@@ -2,9 +2,9 @@
   "packageName": "Zooz Temperature / Humidity XS Sensor ZSE44",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.2.0",
-  "dateReleased": "2024-08-21",
-  "releaseNotes": "1.2.0 Discard out of range temperature or humidity values\n1.1.0 Put Supervision handling back\n1.0.1 Initial release",
+  "version": "1.2.1",
+  "dateReleased": "2024-12-19",
+  "releaseNotes": "1.2.1 Report values for heat/humidity alerts\n1.2.0 Discard out of range temperature or humidity values\n1.1.0 Put Supervision handling back\n1.0.1 Initial release",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/zse44",
   "communityLink": "https://community.hubitat.com/t/release-zooz-zse44-temperature-humidity-xs-sensor-driver/141548",
   "drivers": [

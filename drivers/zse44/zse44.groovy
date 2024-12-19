@@ -29,6 +29,7 @@
 // Version 1.0.1    Update command classes following clarification from Zooz.
 // Version 1.1.0    Put Supervision handling back
 // Version 1.2.0    Discard out of range temperature or humidity values
+// Version 1.2.1    Report values for heat/humidity alerts
 //
 
 // Supported Z-Wave Classes:
@@ -350,6 +351,12 @@ void zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd) {
     if (logEnable) log.debug "NotificationReport: ${cmd}"
 
     switch (cmd.notificationType) {
+        case 4:
+            log.warn "Heat notification event ${cmd.event}"
+            break
+        case 16:
+            log.warn "Humidity notification event ${cmd.event}"
+            break
         default:
             log.warn "Unknown NotificationReport: ${cmd}"
     }

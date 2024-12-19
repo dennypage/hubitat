@@ -37,6 +37,7 @@
  * Version 1.2.2    Add status to shutdown log entry
  * Version 1.3.0    Add Important Notes
  * Version 1.4.0    Delay initialization to avoid spurious username/password required errors on startup
+ * Version 1.5.0    Move important notes text to the associated preference
  */
 
 metadata {
@@ -114,11 +115,11 @@ preferences {
     input name: "upsName", type: "text", title: "UPS name", required: true
     input name: "username", type: "text", title: "NUT username", required: true
     input name: "password", type: "password", title: "NUT password", required: true
-    input name: "pollFreq", type: "number", title: "Polling Frequency<sup><b>1</b></sup>", defaultValue: 5, range: "1..30", required: true
-
-    input name: "shutdownEnable", title: "Enable Hub Shutdown <sup><b>2</b></sup>", type: "bool", defaultValue: false
+    input name: "pollFreq", type: "number", title: "Polling Frequency", defaultValue: 5, range: "1..30", required: true,
+        description: "<b>NB</b>: The Polling Frequency must be less than the <a href='https://networkupstools.org/docs/man/upsmon.conf.html' target='_blank'>HOSTSYNC</a> setting on the NUT server (default 15 seconds). If it is not, the NUT server may shut down before the hub knows that the UPS is on battery."
+    input name: "shutdownEnable", title: "Enable Hub Shutdown", type: "bool", defaultValue: false,
+        description: "<b>NB</b>: This option is required to enable automatic shutdown of the hub. If you do not enable this option, the driver will report UPS status, but will not initiate a hub shutdown even when the NUT server instructs it to do so."
     input name: "logEnable", title: "Enable debug logging", type: "bool", defaultValue: false
-    input "notes", "hidden", title: "<b>Important Notes:</b>", description: "<b>1.</b> The Polling Frequency should be less that the server's <a href='https://networkupstools.org/docs/man/upsmon.conf.html' target='_blank'>HOSTSYNC</a> setting (default 15 seconds). Failure to do so may result in the NUT server shutting down before the hub knows that the ups is on battery.<br><b>2.</b> The Enable Hub Shutdown option is required to enable automatic shutdown of the hub. If you do not enable this option, the driver will report ups status, but will not initiate a hub shutdown even when the NUT server instructs it to do so."
 }
 
 void installed() {

@@ -1,7 +1,7 @@
 /* groovylint-disable LineLength, MethodSize, UnnecessaryGString */
 
 /*
- * Copyright (c) 2023-2024, Denny Page
+ * Copyright (c) 2023-2025, Denny Page
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
  * Version 1.3.0    Add Important Notes
  * Version 1.4.0    Delay initialization to avoid spurious username/password required errors on startup
  * Version 1.5.0    Move important notes text to the associated preference
+ * Version 2.0.0    Implement a backoff for connection attempts to avoid log flooding
  */
 
 metadata {
@@ -63,10 +64,10 @@ import groovy.transform.Field
 
 // Variable name -> attribute map
 @Field static final Map<String,Map> variableMap = [
-    'battery.charge':  [name: 'battery', unit: '%', unknownValue: '0'],
+    'ups.status':      [name: 'status',  unit: '',  unknownValue: 'unknown'],
     'battery.runtime': [name: 'runtime', unit: 's', unknownValue: '0'],
-    'ups.load':        [name: 'load',    unit: '%', unknownValue: '0'],
-    'ups.status':      [name: 'status',  unit: '',  unknownValue: 'unknown']
+    'battery.charge':  [name: 'battery', unit: '%', unknownValue: '0'],
+    'ups.load':        [name: 'load',    unit: '%', unknownValue: '0']
 ]
 @Field static final String statusName = 'status'
 @Field static final String statusShutdownRequested = 'Shutdown Requested'
@@ -134,14 +135,16 @@ void uninstalled() {
 }
 
 void updated() {
-    log.info("updated: ups ${upsName} on host ${serverHost}:${serverPort}")
+    log.info("updated: ups \"${upsName}\" on host \"${serverHost}:${serverPort}\"")
     upsdDisconnect()
+    state.upsdConnectAttempts = 0
     runIn(1, upsdConnect)
 }
 
 void initialize() {
-    unschedule()
     state.upsdConnected = false
+    upsdDisconnect()
+    state.upsdConnectAttempts = 0
     runIn(15, upsdConnect)
 }
 
@@ -150,6 +153,8 @@ void refresh() {
 }
 
 void upsdConnect() {
+    state.upsdConnectAttempts += 1
+
     if (logEnable) {
         log.debug("attempting to connect to upsd on ${serverHost}:${serverPort}...")
     }
@@ -169,7 +174,7 @@ void upsdConnect() {
     }
     catch (e) {
         log.error("telnet connect error: ${e}")
-        runIn(pollFreq, upsdConnect)
+        upsdConnectRetry()
     }
 }
 
@@ -207,7 +212,7 @@ void telnetStatus(String message) {
     if (state.upsdConnected) {
         log.error("telnet status: ${message}")
         upsdDisconnect()
-        runIn(pollFreq, upsdConnect)
+        upsdConnectRetry()
     }
 }
 
@@ -242,9 +247,9 @@ void parse(String message) {
             case errUnknownUps:
                 // Configuration error
                 log.error("upsd: ${errorMap[response[1]]}")
-                upsdDisconnect()
-                runIn(pollFreq, upsdConnect)
                 sendEvent(name: statusName, value: errorMap[response[1]])
+                upsdDisconnect()
+                upsdConnectRetry()
                 break
 
             case errUsernameRequired:
@@ -277,6 +282,9 @@ void parse(String message) {
         log.error("upsd: unexpected message: ${message}")
         return
     }
+
+    // Clear the connection attempt counter
+    state.upsdConnectAttempts = 0
 
     // Get the variable attribute
     Map attribute = variableMap[response[2]]
@@ -349,21 +357,29 @@ void parse(String message) {
 }
 
 private void sendHubShutdownCommand() {
-    String cookie = null
-    if (security) {
-        cookie = getCookie()
-    }
-
     def postParams = [
         uri: "http://127.0.0.1:8080",
         path: "/hub/shutdown",
-        headers:[
-            "Cookie": cookie
-        ]
     ]
 
     log.warn("sending hub shutdown command...")
     httpPost(postParams) { response ->
         log.warn("hub shutdown command sent")
     }
+}
+
+private void upsdConnectRetry()
+{
+    if (state.upsdConnectAttempts < 5) {
+        minutes = 1
+    }
+    else if (state.upsdConnectAttempts < 15) {
+        minutes = 5
+    }
+    else {
+        minutes = 10
+    }
+
+    log.info("connection retry (${state.upsdConnectAttempts}) in ${minutes} minute(s)")
+    runIn(minutes * 60, upsdConnect)
 }

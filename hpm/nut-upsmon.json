@@ -2,9 +2,9 @@
   "packageName": "NUT ups monitor (upsmon)",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "1.5.0",
-  "dateReleased": "2024-05-17",
-  "releaseNotes": "1.5.0 Move important notes text to the associated preference\n1.4.0 Delay initialization to avoid spurious username/password required errors on startup\n1.3.0 Add Important Notes\n1.2.2 Add status to shutdown log entry\n1.2.1 Remove extraneous single quote on battery attribute\n1.2.0 Add PowerSource capability\n1.1.0\n Use 0 for unknown numerical values rather than a string\n Set the unit for numerical values\n1.0.0 Initial release",
+  "version": "2.0.0",
+  "dateReleased": "2025-04-26",
+  "releaseNotes": "2.0.0 Implement a backoff for connection attempts to avoid log flooding\n1.5.0 Move important notes text to the associated preference\n1.4.0 Delay initialization to avoid spurious username/password required errors on startup\n1.3.0 Add Important Notes\n1.2.2 Add status to shutdown log entry\n1.2.1 Remove extraneous single quote on battery attribute\n1.2.0 Add PowerSource capability\n1.1.0\n Use 0 for unknown numerical values rather than a string\n Set the unit for numerical values\n1.0.0 Initial release",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/drivers/nut-upsmon",
   "communityLink": "https://community.hubitat.com/t/release-network-ups-tools-nut-monitor-and-shutdown-controller-upsmon/115483",
   "drivers": [

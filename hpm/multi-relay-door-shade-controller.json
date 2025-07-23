@@ -2,9 +2,9 @@
   "packageName": "Multi-Relay Door/Shade Controller",
   "minimumHEVersion": "2.2.3",
   "author": "Denny Page",
-  "version": "2.0.0",
-  "dateReleased": "2023-04-01",
-  "releaseNotes": "2.0.0 Code restructure and cleanup\n1.2.0 Add Actuator capability",
+  "version": "3.0.0",
+  "dateReleased": "2025-07-23",
+  "releaseNotes": "3.0.0 Allow reporting of external position changes\n2.0.0 Code restructure and cleanup\n1.2.0 Add Actuator capability",
   "documentationLink": "https://github.com/dennypage/hubitat/tree/master/applications/multi-relay-door-shade-controller",
   "communityLink": "https://community.hubitat.com/t/release-multi-relay-door-shade-controller/52793",
   "apps": [

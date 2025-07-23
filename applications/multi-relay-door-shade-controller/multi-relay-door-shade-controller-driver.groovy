@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2023, Denny Page
+// Copyright (c) 2020-2025, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 // Version 1.2.1    Disable DoorControl to allow operation with
 //                  percentage reporting open in Apple Home.
 // Version 2.0.0    Code restructure and cleanup
+// Version 3.0.0    Allow reporting of external position changes
 //
 
 metadata
@@ -51,6 +52,7 @@ metadata
         capability "WindowShade"
         //capability "DoorControl"
         command "stop"
+        command "positionChangedExternally", [[name: "newPosition*", type: "NUMBER", desription: "New position"]]
     }
 }
 
@@ -108,6 +110,14 @@ void stopPositionChange() {
 
 void setPosition(BigDecimal newPosition) {
     if (logEnable) log.debug "setPosition(${newPosition})"
+
+    if (newPosition < 0) {
+        newPosition = 0
+    }
+    else if (newPostion > 100) {
+        newPostion = 100
+    }
+
     if (state.moveBegin) {
         if (newPosition == state.newPosition) {
             return
@@ -206,4 +216,31 @@ void moveComplete(Map args) {
     sendEvent(name: "windowShade", value: status)
     sendEvent(name: "position", value: newPosition)
     if (txtEnable) log.info "${device.displayName}: ${status} (${newPosition})"
+}
+
+void positionChangedExternally(Number newPosition) {
+    unschedule(moveComplete)
+    state.moveBegin = 0
+
+    if (newPosition < 0) {
+        newPosition = 0
+    }
+    else if (newPosition > 100) {
+        newPosition = 100
+    }
+
+    sendEvent(name: "door", value: newPosition > 0 ? "open" : "closed")
+    if (newPosition == 0) {
+        status = "closed"
+    }
+    else if (newPosition == 100) {
+        status = "open"
+    }
+    else {
+        status = "partially open"
+    }
+
+    sendEvent(name: "windowShade", value: status)
+    sendEvent(name: "position", value: newPosition)
+    if (txtEnable) log.info "${device.displayName} changed manually: ${status} (${newPosition})"
 }

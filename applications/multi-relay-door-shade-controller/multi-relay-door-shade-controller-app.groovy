@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2023, Denny Page
+// Copyright (c) 2020-2025, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 // Version 1.0.0    Initial release
 // Version 1.0.1    Child device should be a component device
 // Version 2.0.0    Code restructure and cleanup
+// Version 3.0.0    Allow reporting of external position changes
 //
 
 definition(

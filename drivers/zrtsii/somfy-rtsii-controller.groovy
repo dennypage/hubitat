@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2023, Denny Page
+// Copyright (c) 2020-2026, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 // Version 2.0.1    Don't log on node ping
 // Version 3.0.0    Code restructure and cleanup
 // Version 3.2.0    Report protocol and application (firmware) versions
+// Version 3.3.0    No functional changes
 //
 
 // Supported Z-Wave Classes:
@@ -99,10 +100,6 @@ void zwaveEvent(hubitat.zwave.commands.versionv1.VersionReport cmd) {
 
 void zwaveEvent(hubitat.zwave.commands.manufacturerspecificv1.ManufacturerSpecificReport cmd) {
     if (logEnable) log.debug "Manufacturer Specific Report: ${cmd}"
-    // Already in Data as "manufacturer", "deviceId", "deviceType"
-    //device.updateDataValue("manufacturerId", "${cmd.manufacturerId}")
-    //device.updateDataValue("productId", "${cmd.productId}")
-    //device.updateDataValue("productTypeId", "${cmd.productTypeId}")
 }
 
 void zwaveEvent(hubitat.zwave.Command cmd) {

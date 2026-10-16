@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020-2023, Denny Page
+// Copyright (c) 2020-2026, Denny Page
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,9 @@
 // Version 3.0.0    Code restructure and cleanup
 // Version 3.1.0    Add startPositionChange and stopPositionChange
 // Version 3.2.0    Report protocol and application (firmware) versions
+// Version 3.3.0    Always use a 250ms delay between commands. Always send
+//                  a single stop command to prevent accidential triggering
+//                  of saved position.
 //
 
 // Supported Z-Wave Classes:
@@ -330,16 +333,17 @@ void logEvent(String name, String value, String unit = null, String description 
     }
 }
 
-void sendCmds(List<hubitat.zwave.Command> cmds, Long interval = 200) {
+void sendCmds(List<hubitat.zwave.Command> cmds, Long interval = 250) {
     sendHubCommand(new hubitat.device.HubMultiAction(delayBetween(cmds*.format(), interval), hubitat.device.Protocol.ZWAVE))
 }
 
-void sendCmdCount(hubitat.zwave.Command cmd, Integer count = 1, Long interval = 1) {
+void sendCmdCount(hubitat.zwave.Command cmd, Integer count = 1) {
     List<hubitat.zwave.Command> cmds = []
     count.times {
         cmds.add(cmd)
     }
-    sendCmds(cmds, interval)
+
+    sendCmds(cmds)
 }
 
 void parse(String description) {
@@ -381,5 +385,5 @@ private void sendStartCommand(Boolean upDown) {
 }
 
 private void sendStopCommand() {
-    sendCmdCount(zwave.switchMultilevelV1.switchMultilevelStopLevelChange(), cmdCount.toInteger())
+    sendCmdCount(zwave.switchMultilevelV1.switchMultilevelStopLevelChange(), 1)
 }
